@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" onclick="simulateJumping()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="titleDiv">
+        <p class="titleText">J U M P I N G -- F L A P P Y</p>
+    </div>
+    <div class="gameScreen">
+        <div class="obstacle"></div>
+        <div class="pass"></div>
+        <img class="sunImage" src="./sun.png" alt="">
+        <div class="object">
+            <img class="flappyImage" src="./flappy.png" alt="">
+        </div>
+        <div class="cloudImageWrapper">
+            <img class="cloudImage" src="./cloud.png" alt="">
+            <img class="cloudImage" src="./cloud.png" alt="">
+            <img class="cloudImage" src="./cloud.png" alt="">
+        </div>
+    </div>
+</body>
+<script 
+src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js" 
+integrity="sha512-L6Z/YtIPQ7eU3BProP34WGU5yIRk7tNHk7vaC2dB1Vy1atz6wl9mCkTPPZ2Rn1qPr+vY2mZ9odZLdGYuaBk7dQ=="
+crossorigin="anonymous"></script>
+<script src="./app.js"></script>
+</html>

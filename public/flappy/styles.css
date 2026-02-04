@@ -1,0 +1,99 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.gameScreen {
+    height: 500px;
+    width: 400px;
+    border: 1px solid black;
+    /* this centers the div in the browser */
+    margin: auto;
+    margin-top: 20px;
+    overflow: hidden;
+    background-color: rgb(0, 225, 255);
+    position: relative;
+}
+
+.obstacle {
+    width: 50px;
+    height: 500px;
+    background-color: rgb(0, 0, 0);
+    position: relative;
+    /* this moves the obstacle to the very right of the game screen */
+    /* because tubes are coming from the right */
+    left: 400px;
+    -webkit-animation: rightToLeftMove 2s infinite linear;
+    z-index: 1;
+}
+
+.pass {
+    width: 50px;
+    height: 150px;
+    background-color: rgb(0, 225, 255);
+    position: relative;
+    left: 400px;
+    top: -300px;
+    -webkit-animation: rightToLeftMove 2s infinite linear;
+    z-index: 1;
+}
+
+.object {
+    width: 20px;
+    height: 20px;
+    /* border: 2px solid black; */
+    /* background-color: rgb(187, 255, 0); */
+    position: absolute;
+    top: 50px;
+    z-index: 2;  
+}
+
+.sunImage {
+    width: 18%;
+    position: relative;
+    bottom: 670px;
+    left: 345px;
+}
+
+.flappyImage {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.cloudImageWrapper {
+    /* border: 1px solid black; */
+    width: 390px;
+    height: 60px;
+    position: absolute;
+    bottom:420px;
+    left: 10px;
+    
+    /* display: flex; */
+}
+
+.cloudImage{
+    position: relative;
+    bottom: 18px; 
+    padding-right: 30px;
+}
+
+.titleDiv {
+    border: 1px dashed black;
+    width: 230px;
+    height: 20px;
+    margin: auto;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.titleText {
+    font-weight: 800;
+    font-size: 18px;
+}
+/* animation for the black obstacle: moving it from right to left infinitely */ 
+@-webkit-keyframes rightToLeftMove {
+    /* at the start of the animation you want the obstacle to be far right side */
+    0%{left:400px}
+    /* at the end of the animation you want the obstacle to be far left side(out of sight) */
+    100%{left:-50px}
+}
