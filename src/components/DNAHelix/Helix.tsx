@@ -17,7 +17,6 @@ const COLORS = {
   hero: '#4ea2ff',      // Blue (Top - scroll-to-top)
   projects: '#ff9500',  // Orange (Middle - Projects section)
   skills: '#00d9ff',    // Cyan (Bottom - Skills section)
-  contact: '#00ff88',   // Green (Bottom - Contact section)
   glow: '#ffffff'       // White for progress indicator
 } as const;
 
@@ -32,7 +31,7 @@ const PARAMS = {
   revealFade: 4         // Soft fade edges for gradient
 } as const;
 
-type SectionId = 'hero' | 'projects' | 'skills' | 'contact';
+type SectionId = 'hero' | 'projects' | 'skills';
 
 const HEIGHT = 40;
 const RADIUS = 3;
@@ -133,8 +132,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: Heli
   const markerScreenPositionsRef = useRef<Record<SectionId, { x: number; y: number; visible: boolean }>>({
     hero: { x: 0, y: 0, visible: false },
     projects: { x: 0, y: 0, visible: false },
-    skills: { x: 0, y: 0, visible: false },
-    contact: { x: 0, y: 0, visible: false }
+    skills: { x: 0, y: 0, visible: false }
   });
   const lastRaycastClickRef = useRef<number>(0);
   const { gl, camera, size, events, viewport } = useThree();
@@ -147,8 +145,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: Heli
       (window as any).__DNA_DEBUG__.markerColorsOk = 
         COLORS.hero === '#4ea2ff' &&
         COLORS.projects === '#ff9500' &&
-        COLORS.skills === '#00d9ff' &&
-        COLORS.contact === '#00ff88';
+        COLORS.skills === '#00d9ff';
     }
   }, []);
 
@@ -165,12 +162,10 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: Heli
     const p1Idx = Math.floor(STEPS * 0.15);  // Top - scroll-to-top
     const p2Idx = Math.floor(STEPS * 0.50);  // Middle - Projects
     const p3Idx = Math.floor(STEPS * 0.85);  // Bottom - Skills
-    const p4Idx = Math.floor(STEPS * 0.95);  // Bottom - Contact
     const indices: Record<number, SectionId> = {
       [p1Idx]: 'hero',
       [p2Idx]: 'projects',
-      [p3Idx]: 'skills',
-      [p4Idx]: 'contact'
+      [p3Idx]: 'skills'
     };
     return indices;
   }, []);
@@ -477,8 +472,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: Heli
         const markers: Record<SectionId, { x: number; y: number; visible: boolean }> = {
           hero: { x: 0, y: 0, visible: false },
           projects: { x: 0, y: 0, visible: false },
-          skills: { x: 0, y: 0, visible: false },
-          contact: { x: 0, y: 0, visible: false }
+          skills: { x: 0, y: 0, visible: false }
         };
         const vector = new THREE.Vector3();
 

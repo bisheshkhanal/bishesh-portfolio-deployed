@@ -3,8 +3,7 @@ import { useActiveSection } from '../hooks/useActiveSection';
 const SECTION_CONFIG = [
   { id: 'hero', color: '#4ea2ff', top: '15%' },
   { id: 'projects', color: '#ff9500', top: '50%' },
-  { id: 'skills', color: '#00d9ff', top: '85%' },
-  { id: 'contact', color: '#00ff88', top: '95%' }
+  { id: 'skills', color: '#00d9ff', top: '85%' }
 ] as const;
 
 export default function DNATether() {

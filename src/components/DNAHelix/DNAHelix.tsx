@@ -36,7 +36,7 @@ const clamp = (value: number, min: number, max: number): number =>
 
 export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const sectionIds = useMemo(() => ['hero', 'projects', 'skills', 'contact'], []);
+  const sectionIds = useMemo(() => ['hero', 'projects', 'skills'], []);
   const activeSection = useActiveSection(sectionIds);
   const isE2E = typeof window !== 'undefined' && window.__DNA_E2E__ === true;
   
