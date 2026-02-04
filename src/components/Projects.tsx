@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import projects from '../data/projectsData';
 import { projectDetails } from '../data/projectDetailsData';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 // Tech badge color-coding per design spec
 const getBadgeColor = (tech: string) => {
@@ -18,16 +19,66 @@ const getBadgeColor = (tech: string) => {
 
 export default function Projects() {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const toggle = (id: string) => {
     setExpanded((prev) => (prev === id ? null : id));
   };
 
-  return (
-    <section id="projects" className="w-full py-24">
-      <h2 className="text-[48px] font-normal mb-12 tracking-wide">PROJECTS</h2>
+  // Container variants for staggered reveal
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: prefersReducedMotion ? 0 : 0.1,
+        delayChildren: prefersReducedMotion ? 0 : 0.1,
+      }
+    }
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  // Item variants for each card
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+      }
+    }
+  };
+
+  const headingVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+      }
+    }
+  };
+
+  return (
+    <section id="projects" className="w-full py-24 lg:py-32">
+       <motion.h2
+         className="text-[48px] font-normal mb-12 tracking-tight"
+         variants={headingVariants}
+         initial={prefersReducedMotion ? "visible" : "hidden"}
+         animate="visible"
+       >
+         PROJECTS
+       </motion.h2>
+
+      <motion.div
+        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         {projects.map((p) => {
           const detail: any = (projectDetails as any)[p.id];
           const isOpen = expanded === p.id;
@@ -35,15 +86,15 @@ export default function Projects() {
           return (
             <motion.article
               key={p.id}
-              layout
               data-testid="project-card"
               data-project-id={p.id}
               className={`
-                relative overflow-hidden rounded-xl p-8 cursor-pointer transition-colors duration-200
-                bg-[#1a1a1a] hover:bg-[#222222]
+                relative overflow-hidden rounded-xl p-8 cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.5,1,0.5,1)]
+                bg-[#1a1a1a] hover:brightness-105
                 ${isOpen ? 'lg:col-span-2 z-10' : ''}
               `}
               onClick={() => toggle(p.id)}
+              variants={itemVariants}
             >
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
@@ -143,7 +194,7 @@ export default function Projects() {
             </motion.article>
           );
         })}
-      </div>
+      </motion.div>
     </section>
   );
 }

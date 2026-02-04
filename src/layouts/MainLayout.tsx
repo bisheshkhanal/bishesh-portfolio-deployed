@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import DNATether from '../components/DNATether';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -7,7 +8,11 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children, dnaSlot }: MainLayoutProps) => {
   return (
-    <div className="relative min-h-screen bg-[#0a0a0a] text-[var(--white)] overflow-x-hidden selection:bg-[var(--cyan)] selection:text-[var(--bg-black)]">
+    <div 
+      data-testid="app-shell"
+      className="relative min-h-screen bg-[#0a0a0a] text-[var(--white)] overflow-x-hidden selection:bg-[var(--cyan)] selection:text-[var(--bg-black)] before:content-[''] before:absolute before:inset-0 before:z-0 before:pointer-events-none before:bg-diagonal-grid"
+    >
+      <DNATether />
       <aside
         data-testid="dna-rail"
         className="fixed top-0 right-0 h-screen z-20 flex items-stretch justify-stretch"

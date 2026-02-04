@@ -50,3 +50,10 @@ e2e/
 test/
 playwright.config.ts
 vitest.setup.js
+
+# Build artifacts (Vite)
+dist/
+
+# Playwright test artifacts
+test-results/
+playwright-report/

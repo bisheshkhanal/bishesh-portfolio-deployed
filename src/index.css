@@ -50,3 +50,12 @@ code {
 [data-testid="dna-canvas"] canvas {
   pointer-events: auto !important;
 }
+
+@layer utilities {
+  .bg-diagonal-grid {
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(-45deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
