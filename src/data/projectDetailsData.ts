@@ -1,4 +1,22 @@
 export const projectDetails = {
+  "upzoids-experience": {
+    overview: "Internship at Upzoids (July 21, 2025 – August 7, 2026) focused on Power Platform development, Azure DevOps optimization, and AI-driven workflow automation for enterprise RFP processes.",
+    features: [
+      {
+        title: "Duplicate Detection",
+        description: "Implemented duplicate detection systems to improve data quality and reduce redundancy in enterprise workflows."
+      },
+      {
+        title: "Azure DevOps Pipeline Optimization",
+        description: "Optimized CI/CD pipelines, achieving approximately 70% improvement in deployment efficiency and build times."
+      },
+      {
+        title: "RAG Workflow for RFP Drafting",
+        description: "Built a Retrieval-Augmented Generation (RAG) workflow that streamlined RFP drafting processes, reducing manual effort by up to 70%."
+      }
+    ],
+    conclusion: "This internship provided hands-on experience with enterprise-scale Power Platform solutions, DevOps best practices, and AI integration — demonstrating the ability to deliver measurable efficiency improvements in production environments."
+  },
   "indie-bunny": {
     overview: "Indie Bunny is a full-stack game marketplace designed to uplift indie game developers through a unique tipping and mystery reward system. Players can support developers directly, browse listings with region-adjusted pricing, and receive surprise games from the Mystery Pool.",
     features: [

@@ -70,7 +70,7 @@ export default function Projects() {
          initial={prefersReducedMotion ? "visible" : "hidden"}
          animate="visible"
        >
-         PROJECTS
+         Projects
        </motion.h2>
 
       <motion.div

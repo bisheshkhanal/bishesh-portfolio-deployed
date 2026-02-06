@@ -2,36 +2,26 @@ import { bio } from '../data/bioData';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 export default function Hero() {
-  const baseUrl = import.meta.env.BASE_URL || '/';
-  const resumeUrl = baseUrl.endsWith('/') 
-    ? baseUrl + 'Bishesh_Khanal_Resume.pdf'
-    : baseUrl + '/' + 'Bishesh_Khanal_Resume.pdf';
-  
   const prefersReducedMotion = usePrefersReducedMotion();
+  const ladderWidths = ['w-[252px]', 'w-[144px]', 'w-[90px]', 'w-[54px]', 'w-[36px]', 'w-[27px]', 'w-[18px]', 'w-[9px]'] as const;
+
+  const scrollToProjects = () => {
+    const element = document.getElementById('projects');
+    if (element) {
+      element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    }
+  };
 
   return (
     <header id="hero" className="relative flex flex-col justify-center min-h-[80vh] mb-24">
       <h1 className="text-[80px] lg:text-[100px] font-bold leading-[0.9] tracking-tighter mb-4 text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]">
         {bio.name.toUpperCase()}
       </h1>
-      <p className="text-[var(--cyan)] text-2xl lg:text-3xl tracking-[0.2em] font-light mb-8 uppercase drop-shadow-[0_0_10px_rgba(0,217,255,0.4)]">
-        Computer Science <span className="mx-2 text-white/50">×</span> Biology
-      </p>
-      <div className="max-w-2xl">
-        <p className="text-xl text-[var(--gray)] leading-relaxed font-light">
-          {bio.tagline}
-        </p>
-        <div className="mt-8 flex gap-4">
-          <a
-            href={resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-[var(--cyan)] text-black font-medium rounded hover:bg-[var(--cyan)]/90 transition-colors duration-200"
-          >
-            Download Resume
-          </a>
-        </div>
-      </div>
+       <div className="max-w-2xl">
+         <p className="text-xl text-[var(--gray)] leading-relaxed font-light">
+           {bio.tagline}
+         </p>
+       </div>
 
       <section id="about" className="mt-32 max-w-3xl">
          <div className="space-y-4 mb-12">
@@ -48,31 +38,23 @@ export default function Hero() {
          </div>
       </section>
 
-      <div
-        data-testid="hero-ladder"
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 p-4 opacity-50 select-none pointer-events-none"
+      <button
+        data-testid="hero-scroll-cue"
+        onClick={scrollToProjects}
+        className="mt-16 flex items-start py-2 text-white/55 hover:text-white/85 transition-colors cursor-pointer group"
+        aria-label="Scroll to projects"
       >
-        <div className="flex flex-col gap-1.5 items-center">
-            <div className="w-8 h-0.5 bg-[var(--cyan)]/50" />
-            <div className="w-6 h-0.5 bg-[var(--cyan)]/50" />
-            <div className="w-4 h-0.5 bg-[var(--cyan)]/50" />
+        <span className="sr-only">Scroll to projects</span>
+        <div className="flex flex-col items-start gap-[18px]" aria-hidden="true">
+          {ladderWidths.map((widthClass, index) => (
+            <span
+              key={widthClass}
+              className={`${widthClass} h-[1.5px] rounded-full bg-current ${prefersReducedMotion ? '' : 'hero-ladder-bar'}`}
+              style={prefersReducedMotion ? undefined : { animationDelay: `${index * 120}ms` }}
+            />
+          ))}
         </div>
-        
-        <svg 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
-          strokeWidth="2" 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          className="text-[var(--cyan)] mt-1"
-        >
-          <path d="M7 13l5 5 5-5" />
-          <path d="M7 6l5 5 5-5" />
-        </svg>
-      </div>
+      </button>
     </header>
   );
 }

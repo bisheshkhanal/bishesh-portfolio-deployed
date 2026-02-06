@@ -2,12 +2,14 @@ import { useRef, useMemo, useLayoutEffect, useState, useEffect, useCallback } fr
 import { useFrame, ThreeEvent, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { generateHelixPoints, RenderPoint } from './dnaMath';
+import { DNAMarkerId } from '../../hooks/useDNAMarkerAnchors';
 
 interface HelixProps {
   scrollProgress: any;
   onNavigate?: (sectionId: string) => void;
   activeSection?: string;
   isE2E?: boolean;
+  markerTs: Record<DNAMarkerId, number>;
 }
 
 // Colors from design spec - light, visible against #0a0a0a
@@ -122,7 +124,7 @@ function SectionMarkerGlow({
   );
 }
 
-export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: HelixProps) {
+export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, markerTs }: HelixProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -159,16 +161,24 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E }: Heli
 
   // Section marker positions - matching spec distribution
   const clusterIndices = useMemo(() => {
-    const p1Idx = Math.floor(STEPS * 0.15);  // Top - scroll-to-top
-    const p2Idx = Math.floor(STEPS * 0.50);  // Middle - Projects
-    const p3Idx = Math.floor(STEPS * 0.85);  // Bottom - Skills
-    const indices: Record<number, SectionId> = {
-      [p1Idx]: 'hero',
-      [p2Idx]: 'projects',
-      [p3Idx]: 'skills'
+    const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
+    const indexFor = (sectionId: SectionId) =>
+      Math.round(clamp01(markerTs[sectionId] ?? 0) * (STEPS - 1));
+
+    const indicesBySection: Record<SectionId, number> = {
+      hero: indexFor('hero'),
+      projects: indexFor('projects'),
+      skills: indexFor('skills')
     };
-    return indices;
-  }, []);
+
+    return (Object.keys(indicesBySection) as SectionId[]).reduce<Record<number, SectionId>>(
+      (acc, sectionId) => {
+        acc[indicesBySection[sectionId]] = sectionId;
+        return acc;
+      },
+      {}
+    );
+  }, [markerTs]);
 
   const markerPositions = useMemo(() => {
     const positions: Array<{ position: [number, number, number]; color: string; sectionId: SectionId }> = [];

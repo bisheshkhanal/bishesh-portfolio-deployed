@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo, useCallback } from 'react';
 import { useMotionValue, useSpring } from 'framer-motion';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { useDNAMarkerAnchors } from '../../hooks/useDNAMarkerAnchors';
 import { Scene } from './Scene';
 
 declare global {
@@ -38,6 +39,7 @@ export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const sectionIds = useMemo(() => ['hero', 'projects', 'skills'], []);
   const activeSection = useActiveSection(sectionIds);
+  const { markerTs } = useDNAMarkerAnchors();
   const isE2E = typeof window !== 'undefined' && window.__DNA_E2E__ === true;
   
   const rawScrollProgress = useMotionValue(0);
@@ -148,6 +150,7 @@ export default function DNAHelix() {
             onNavigate={handleNavigate}
             activeSection={activeSection}
             isE2E={isE2E}
+            markerTs={markerTs}
             className="w-full h-full"
         />
       </div>

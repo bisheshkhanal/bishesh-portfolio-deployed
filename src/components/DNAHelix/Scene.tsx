@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { Helix } from './Helix';
+import { DNAMarkerId } from '../../hooks/useDNAMarkerAnchors';
 import { Suspense, CSSProperties, useCallback, useState } from 'react';
 
 interface SceneProps {
@@ -7,11 +8,12 @@ interface SceneProps {
   onNavigate?: (sectionId: string) => void;
   activeSection?: string;
   isE2E?: boolean;
+  markerTs: Record<DNAMarkerId, number>;
   className?: string;
   style?: CSSProperties;
 }
 
-export function Scene({ scrollProgress, onNavigate, activeSection, isE2E, className, style }: SceneProps) {
+export function Scene({ scrollProgress, onNavigate, activeSection, isE2E, markerTs, className, style }: SceneProps) {
   const [eventSource, setEventSource] = useState<HTMLDivElement | null>(null);
   const setEventSourceRef = useCallback((node: HTMLDivElement | null) => {
     setEventSource(node);
@@ -43,6 +45,7 @@ export function Scene({ scrollProgress, onNavigate, activeSection, isE2E, classN
             onNavigate={onNavigate} 
             activeSection={activeSection}
             isE2E={isE2E}
+            markerTs={markerTs}
           />
         </Suspense>
       </Canvas>

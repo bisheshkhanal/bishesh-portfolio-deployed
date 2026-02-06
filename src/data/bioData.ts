@@ -1,13 +1,13 @@
 export const bio = {
   name: "Bishesh Khanal",
-  tagline: "Passionate about building practical, impactful systems.",
+  tagline: "I architect systems that bridge complexity and clarity.",
   greeting: "Hey, I'm Bishesh.",
   role: "A software developer.",
   subheaders: [
-    "Backend. Systems. AI. Impact.",
-    "Distributed Systems. Networks.",
-    "Cloud. Security. Scale.",
-    "Full-stack. Real-world. Results."
+    "From biological systems to digital architecture",
+    "I build software with depth and intention",
+    "Distributed systems, AI, and everything between",
+    "Less CRUD. More protocols. More impact."
   ],
   paragraphs: [
     "I'm a Computer Science and Biology student at the University of Calgary. I'm passionate about learning and building secure, scalable systems and full-stack applications.",

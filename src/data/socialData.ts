@@ -13,5 +13,10 @@ export const socialLinks = [
     name: "Email",
     url: "mailto:khanalbishesh12@gmail.com",
     type: "email"
+  },
+  {
+    name: "Resume",
+    url: "/Bishesh_Khanal_Resume.pdf",
+    type: "resume"
   }
 ];

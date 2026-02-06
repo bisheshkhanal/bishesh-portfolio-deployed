@@ -1,5 +1,15 @@
 const projects = [
   {
+    id: "upzoids-experience",
+    title: "Upzoids — Power Platform Developer",
+    description:
+      "Professional internship experience building Power Platform solutions, optimizing Azure DevOps pipelines, and implementing AI-driven workflows for enterprise RFP processes.",
+    technologies: ["Power Platform", "Azure DevOps", "AI/ML", "RAG", "Workflow Automation"],
+    images: [],
+    demoLink: null,
+    repoLink: null,
+  },
+  {
     id: "indie-bunny",
     title: "Indie Bunny Marketplace",
     description:
