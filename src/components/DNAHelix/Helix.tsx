@@ -10,6 +10,7 @@ interface HelixProps {
   activeSection?: string;
   isE2E?: boolean;
   markerTs: Record<DNAMarkerId, number>;
+  scale?: number;
 }
 
 // Colors from design spec - light, visible against #0a0a0a
@@ -35,8 +36,8 @@ const PARAMS = {
 
 type SectionId = 'hero' | 'projects' | 'skills';
 
-const HEIGHT = 40;
-const RADIUS = 3;
+const BASE_HEIGHT = 40;
+const BASE_RADIUS = 3;
 const STEPS = 60;
 const ROTATIONS = 5;
 
@@ -47,7 +48,8 @@ function SectionMarkerGlow({
   isActive,
   isE2E,
   onClick,
-  onPointerDown
+  onPointerDown,
+  scale
 }: {
   position: [number, number, number];
   color: string;
@@ -55,6 +57,7 @@ function SectionMarkerGlow({
   isE2E?: boolean;
   onClick?: () => void;
   onPointerDown?: () => void;
+  scale: number;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const outerRef = useRef<THREE.Mesh>(null);
@@ -109,22 +112,22 @@ function SectionMarkerGlow({
           setHovered(false);
         }}
       >
-        <sphereGeometry args={[5.0, 12, 12]} />
+        <sphereGeometry args={[5.0 * scale, 12, 12]} />
         <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
       </mesh>
       <mesh ref={meshRef}>
-        <sphereGeometry args={[PARAMS.glowScale, 16, 16]} />
+        <sphereGeometry args={[PARAMS.glowScale * scale, 16, 16]} />
         <meshBasicMaterial color={color} transparent opacity={isActive ? 0.9 : 0.25} />
       </mesh>
       <mesh ref={outerRef}>
-        <sphereGeometry args={[PARAMS.glowScale * 1.6, 16, 16]} />
+        <sphereGeometry args={[PARAMS.glowScale * 1.6 * scale, 16, 16]} />
         <meshBasicMaterial color={color} transparent opacity={isActive ? 0.5 : 0.08} />
       </mesh>
     </group>
   );
 }
 
-export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, markerTs }: HelixProps) {
+export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, markerTs, scale = 1 }: HelixProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -139,23 +142,33 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   const lastRaycastClickRef = useRef<number>(0);
   const { gl, camera, size, events, viewport } = useThree();
 
+  const radius = BASE_RADIUS * scale;
+  const height = BASE_HEIGHT * scale;
+  const visualParams = useMemo(() => ({
+    ...PARAMS,
+    baseScale: PARAMS.baseScale * scale,
+    clusterScale: PARAMS.clusterScale * scale,
+    glowScale: PARAMS.glowScale * scale
+  }), [scale]);
+
   // Expose debug info
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).__DNA_DEBUG__ = (window as any).__DNA_DEBUG__ || {};
       (window as any).__DNA_DEBUG__.markerColors = COLORS;
-      (window as any).__DNA_DEBUG__.markerColorsOk = 
+      (window as any).__DNA_DEBUG__.markerColorsOk =
         COLORS.hero === '#4ea2ff' &&
         COLORS.projects === '#ff9500' &&
         COLORS.skills === '#00d9ff';
+      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
     }
   }, []);
 
-  const toWorldY = (y: number) => (HEIGHT / 2) - y;
+  const toWorldY = (y: number) => (height / 2) - y;
 
   const { strand1, strand2 } = useMemo(() => {
-    return generateHelixPoints(HEIGHT, RADIUS, STEPS, ROTATIONS);
-  }, []);
+    return generateHelixPoints(height, radius, STEPS, ROTATIONS);
+  }, [height, radius]);
 
   const totalPoints = strand1.length + strand2.length;
 
@@ -227,7 +240,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       tempObject.position.set(point.x, yPos, point.z);
 
       const isCluster = !!sectionId;
-      tempObject.scale.setScalar(isCluster ? PARAMS.clusterScale : PARAMS.baseScale);
+      tempObject.scale.setScalar(isCluster ? visualParams.clusterScale : visualParams.baseScale);
       tempObject.updateMatrix();
 
       meshRef.current!.setMatrixAt(index, tempObject.matrix);
@@ -240,7 +253,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
         color.set(COLORS[sectionId]);
       } else {
         // Base particles - light gray with depth variation
-        const depthFactor = (point.z + RADIUS) / (2 * RADIUS);
+        const depthFactor = (point.z + radius) / (2 * radius);
         color.setRGB(
           0.90 + depthFactor * 0.10,  // Slightly brighter base
           0.90 + depthFactor * 0.10,
@@ -274,7 +287,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     if (meshRef.current.instanceColor) {
       meshRef.current.instanceColor.needsUpdate = true;
     }
-  }, [strand1, strand2, clusterIndices, totalPoints]);
+  }, [strand1, strand2, clusterIndices, totalPoints, radius, visualParams.baseScale, visualParams.clusterScale]);
 
   // Handle hover states
   useEffect(() => {
@@ -294,7 +307,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       if (!point || !sectionId) return;
 
       tempObject.position.set(point.x, toWorldY(point.y), point.z);
-      tempObject.scale.setScalar(isHovering ? PARAMS.clusterScale * 1.3 : PARAMS.clusterScale);
+      tempObject.scale.setScalar(isHovering ? visualParams.clusterScale * 1.3 : visualParams.clusterScale);
       tempObject.updateMatrix();
       meshRef.current!.setMatrixAt(instanceId, tempObject.matrix);
 
@@ -317,7 +330,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     }
 
     prevHoveredRef.current = instanceId;
-  }, [hovered, strand1, clusterIndices]);
+  }, [hovered, strand1, clusterIndices, visualParams.clusterScale]);
 
   const debugStateRef = useRef({
     lastUpdate: 0,
@@ -414,6 +427,10 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const group = groupRef.current;
 
+    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
+      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
+    }
+
     // E2E Freeze: freeze motion to ensure deterministic snapshots
     if (isE2E) {
       if (typeof window !== 'undefined' && window.__DNA_DEBUG__) {
@@ -465,7 +482,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       const box = new THREE.Box3().setFromObject(group);
       const helixWorldHeight = box.max.y - box.min.y;
       
-      const maxAllowedHeight = viewportWorldHeight * 0.95;
+      const maxAllowedHeight = viewportWorldHeight * 0.95 * scale;
       const fitsViewport = helixWorldHeight <= maxAllowedHeight + 0.01;
       
       if (helixWorldHeight > 0.1) {
@@ -610,10 +627,11 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
           onPointerDown={() => {
             lastRaycastClickRef.current = performance.now();
           }}
+          scale={scale}
         />
        ))}
 
-       <Lattice strand1={strand1} strand2={strand2} height={HEIGHT} />
+       <Lattice strand1={strand1} strand2={strand2} height={height} />
      </group>
   );
 }
