@@ -27,6 +27,11 @@ declare global {
       viewportWorldHeight?: number;
       fitsViewport?: boolean;
       motionFrozen?: boolean;
+      cameraFov?: number;
+      cameraZ?: number;
+      canvasPx?: number;
+      aspect?: number;
+      isNarrow?: boolean;
     };
     __DNA_E2E__?: boolean;
   }
