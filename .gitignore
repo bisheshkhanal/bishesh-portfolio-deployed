@@ -39,6 +39,7 @@ yarn-error.log*
 
 # Non-deployable project artifacts
 AGENTS.md
+.worktrees/
 R3F_BEST_PRACTICES.md
 design-mockups/
 logs/
