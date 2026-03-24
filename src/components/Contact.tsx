@@ -18,7 +18,7 @@ const headingVariants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: [0.5, 1, 0.5, 1],
+      ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
     },
   },
 };

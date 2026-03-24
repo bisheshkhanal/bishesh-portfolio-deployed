@@ -45,7 +45,7 @@ export default function Projects() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number]
       }
     }
   };
@@ -57,7 +57,7 @@ export default function Projects() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number]
       }
     }
   };

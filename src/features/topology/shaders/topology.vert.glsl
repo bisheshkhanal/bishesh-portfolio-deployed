@@ -19,6 +19,7 @@ varying float vProgressIndex;
 varying float vHelixSide;
 varying float vRungMix;
 varying float vWorldY;
+varying float vIsDust;
 
 // Constants
 const float PI = 3.14159265358979;
@@ -91,13 +92,53 @@ void main() {
   vRungMix = aRungMix;
 
   // Beat 1 — Helix: double strand with rung connectors
-  float angle = aProgressIndex * ROTATIONS * 2.0 * PI;
+  float angle = aProgressIndex * ROTATIONS * 2.0 * PI + uTime * 0.2;
   float phaseOffset = aHelixSide * PI;
-  float helixX = cos(angle + phaseOffset) * RADIUS;
-  float helixZ = sin(angle + phaseOffset) * RADIUS;
+  float totalAngle = angle + phaseOffset;
+  
+  float helixX = cos(totalAngle) * RADIUS;
+  float helixZ = sin(totalAngle) * RADIUS;
   float helixY = (aProgressIndex - 0.5) * HEIGHT;
-  vec3 helixPos = vec3(helixX, helixY, helixZ);
-  helixPos = mix(helixPos, vec3(0.0, helixY, 0.0), aRungMix * 0.8);
+  vec3 baseHelixPos = vec3(helixX, helixY, helixZ);
+  
+  // Backbone thickness (Narrow shell/annulus)
+  float slope = HEIGHT / (ROTATIONS * 2.0 * PI);
+  vec3 tangent = normalize(vec3(-sin(totalAngle) * RADIUS, slope, cos(totalAngle) * RADIUS));
+  vec3 normal = normalize(vec3(cos(totalAngle), 0.0, sin(totalAngle)));
+  vec3 binormal = cross(tangent, normal);
+  
+  float rOffset = 0.15 + 0.1 * abs(aRandom.x); // Tight annulus instead of filled circle
+  float thetaOffset = aRandom.y * 2.0 * PI;
+  vec3 backboneOffset = normal * (cos(thetaOffset) * rOffset) + binormal * (sin(thetaOffset) * rOffset);
+  vec3 backbonePos = baseHelixPos + backboneOffset;
+
+  // Discrete rungs
+  float numRungs = 10.0;
+  float quantizedProgress = (floor(aProgressIndex * numRungs) + 0.5) / numRungs;
+  float jitter = (aRandom.y - 0.5) * 0.08; // Tiny angle jitter to reduce moire/combing
+  float rungAngle = quantizedProgress * ROTATIONS * 2.0 * PI + uTime * 0.2 + jitter;
+  float rungY = (quantizedProgress - 0.5) * HEIGHT + (aRandom.z - 0.5) * 0.1;
+  
+  vec3 strand1 = vec3(cos(rungAngle) * RADIUS, rungY, sin(rungAngle) * RADIUS);
+  vec3 strand2 = vec3(cos(rungAngle + PI) * RADIUS, rungY, sin(rungAngle + PI) * RADIUS);
+  
+  float rungT = fract(abs(aRandom.x) * 13.37);
+  vec3 rungBasePos = mix(strand1, strand2, rungT);
+  vec3 rungPos = rungBasePos + vec3(aRandom.y, aRandom.z, aRandom.x) * 0.02;
+  
+  // Dust
+  float isDust = step(0.72, abs(aRandom.z));
+  float dustR = RADIUS + 2.0 + abs(aRandom.x) * 7.5; // Start outside the helix mass
+  float dustAngle = aRandom.y * 2.0 * PI + uTime * 0.1;
+  float dustY = (aRandom.z - 0.5) * HEIGHT * 1.5; // Symmetric vertical placement
+  vec3 dustPos = vec3(cos(dustAngle) * dustR, dustY, sin(dustAngle) * dustR);
+  
+  // Mix components
+  float isRung = step(0.398, aRungMix); // Sharply reduce rung population
+  vec3 helixPos = mix(backbonePos, rungPos, isRung);
+  helixPos = mix(helixPos, dustPos, isDust);
+  
+  vIsDust = isDust;
 
   // Beat 2 — Data Streams: clustered vertical columns
   float streamId = floor(aLatticeMix * 16.0);
@@ -167,6 +208,7 @@ void main() {
   vDepth = clamp((-mvPosition.z - 2.0) / 30.0, 0.0, 1.0);
 
   float pointSize = aSize * uPointScale * (300.0 / -mvPosition.z);
-  gl_PointSize = clamp(pointSize, 0.5, 4.0);
+  pointSize *= mix(1.0, 2.5, vIsDust); // Boost dust point size
+  gl_PointSize = clamp(pointSize, 0.5, mix(4.0, 6.0, vIsDust));
   gl_Position = projectionMatrix * mvPosition;
 }

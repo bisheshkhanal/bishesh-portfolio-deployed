@@ -1,83 +1,41 @@
 # Bishesh Khanal Portfolio
 
-A personal portfolio website featuring an interactive 3D DNA helix that serves as both a visual signature and navigation system.
+This repo is the foundation for a modern, agentic-focused portfolio and digital garden.
+
+## Core Narrative & Direction
+The portfolio is shifting away from generic "software developer" messaging to focus heavily on:
+1. **Agentic Engineering & AI Infrastructure:** Building systems that reason, tools that augment capability, and exploring modern AI harnesses.
+2. **Biotech Intersection:** Bridging the gap between software and biological systems.
+3. **Digital Garden / Blog Space:** A living space for thoughts, learnings, and explorations, moving away from a static project list.
+4. **Cinematic Web Experience:** Leveraging WebGL, Three.js, and creative coding to make the site feel like a premium, interactive experience.
 
 ## Tech Stack
 
-- **React 19** - UI framework
-- **Vite** - Build tool and dev server
-- **TypeScript** - Type safety
-- **Three.js** (@react-three/fiber) - 3D DNA helix rendering
-- **Framer Motion** - Smooth scroll animations
-- **Tailwind CSS** - Utility-first styling
-- **Playwright** - End-to-end testing
+- React 19
+- Vite
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- Three.js via `@react-three/fiber`
+- React Router 7
 
-## Features
-
-- Interactive 3D DNA helix navigation with scroll tracking
-- Single-page immersive scroll experience
-- Expandable project cards with tech stack tags
-- Fully responsive design (desktop and mobile)
-- End-to-end tested with Playwright
-- Clean, minimal aesthetic with focus on the DNA signature element
-
-## Getting Started
+## Commands
 
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
 npm run build
-
-# Preview production build
-npm run preview
-
-# Run unit tests
 npm test
-
-# Run E2E tests (requires Playwright browsers)
-npm run test:e2e
-
-# Install Playwright browsers (first time only)
-npm run e2e:install
 ```
 
-## Project Structure
+## Current Structure
 
-```
+```text
 src/
-├── app/
-│   ├── App.tsx          # Main app component
-│   └── app.css          # App styles
-├── components/
-│   ├── DNAHelix/        # DNA helix (Three.js)
-│   ├── Hero.tsx         # Hero section
-│   ├── Projects.tsx     # Projects grid
-│   ├── Skills.tsx       # Skills grid
-│   └── Contact.tsx      # Contact footer
-├── data/                # Static content (TypeScript)
-│   ├── bioData.ts
-│   ├── projectsData.ts
-│   ├── projectDetailsData.ts
-│   ├── skillsData.ts
-│   └── socialData.ts
-├── hooks/               # Custom React hooks
-│   ├── useActiveSection.ts
-│   └── usePrefersReducedMotion.ts
-├── layouts/
-│   └── MainLayout.tsx   # Layout wrapper
-└── main.tsx             # Entry point
-
-test/
-├── smoke.test.js        # Smoke tests
-e2e/
-├── dna-helix.spec.ts    # DNA helix interaction tests
+  app/                Routed app shell
+  components/         UI components and creative coding elements
+  data/               Portfolio content data (projects, bio, etc.)
+  hooks/              Shared interaction hooks
+  layouts/            App shell layout
+  routes/             Top-level routed shell pages (Home, Work, Experiments, About, Writing)
 ```
-
-## License
-
-MIT License - feel free to use this project as a reference for your own portfolio.

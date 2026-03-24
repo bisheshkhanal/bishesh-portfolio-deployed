@@ -1,55 +1,42 @@
-const projects = [
+const projects: Array<{
+  id: string;
+  title: string;
+  description: string;
+  technologies: string[];
+  images: string[];
+  demoLink: string | null;
+  repoLink: string | null;
+}> = [
   {
-    id: "upzoids-experience",
-    title: "Upzoids — Power Platform Developer",
+    id: 'ragebaiter',
+    title: 'RageBaiter',
     description:
-      "Professional internship experience building Power Platform solutions, optimizing Azure DevOps pipelines, and implementing AI-driven workflows for enterprise RFP processes.",
-    technologies: ["Power Platform", "Azure DevOps", "AI/ML", "RAG", "Workflow Automation"],
-    images: [],
+      'A Manifest V3 Chrome extension built to nudge Twitter/X users out of echo chambers using LLM-powered vectors to analyze political bias and logical fallacies.',
+    technologies: ['React 19', 'Tailwind CSS', 'Chrome Extension MV3', 'Vite', 'LLMs'],
+    images: ['/projects/ragebaiter.jpg'],
     demoLink: null,
     repoLink: null,
   },
   {
-    id: "indie-bunny",
-    title: "Indie Bunny Marketplace",
+    id: 'securewebsuite',
+    title: 'Secure File Transfer Platform',
     description:
-      "Full-stack game marketplace built with Django, React, and PostgreSQL. Supports tipping, mystery redemptions, user authentication, and game approval.",
-    technologies: ["React", "Django", "PostgreSQL", "Firebase", "Supabase", "Render", "Vercel"],
-    images: [],
-    demoLink: "https://indie-bunny-marketplace.vercel.app/home",
-    repoLink: "https://github.com/bisheshkhanal/Indie-Bunny-Marketplace", 
+      'A backend platform demonstrating authenticated file management and reliable UDP data transfer.',
+    technologies: ['Node.js', 'Express', 'JWT', 'UDP', 'Stop-and-Wait Protocol'],
+    images: ['/projects/securewebsuite.jpg'],
+    demoLink: null,
+    repoLink: null,
   },
-   {
-     id: "quiplash-chat-game",
-     title: "Quiplash-inspired Chat Game",
-     description:
-       "Real-time multiplayer text game using FastAPI containers and React frontend, with custom master clock and proxy servers for distributed consistency.",
-     technologies: ["FastAPI", "React", "Docker", "Distributed Systems Principles"],
-     images: [],
-     demoLink: null,
-     repoLink: "https://github.com/bisheshkhanal/Distributed-Chat-Game", 
-   },
-   {
-     id: "securewebsuite",
-     title: "SecureWebSuite",
-     description:
-       "Java HTTP/HTTPS server and client with SHA256 handshake auth and multithreaded design. Includes Stop-and-Wait UDP file transfer module.",
-     technologies: ["Java", "Multithreading", "TLS", "Networking", "SHA256"],
-     images: [], 
-     demoLink: null,
-     repoLink: "https://github.com/bisheshkhanal/SecureWebSuite", 
-   },
-   {
-     id: "flappy-bird-clone",
-     title: "Mock Flappy Bird Game",
-     description:
-       "Web clone of Flappy Bird with HTML, CSS, and JavaScript. Developed frontend structure and game logic for an interactive gameplay experience.",
-     technologies: ["HTML", "CSS", "JavaScript"],
-     images: [],
-     demoLink: `${import.meta.env.BASE_URL}flappy/flappy.html`, 
-     repoLink: "https://github.com/pranabmainali/Flappy_Bird_Game"
-   },
-  
+  {
+    id: 'onepiecedle',
+    title: 'OnePiecedle',
+    description:
+      'A Wordle-like guessing game featuring One Piece characters. Guess the mystery character in 6 tries using attribute clues!',
+    technologies: ['React', 'TypeScript', 'Tailwind CSS'],
+    images: ['/projects/onepiecedle.jpg'],
+    demoLink: null,
+    repoLink: null,
+  },
 ];
 
 export default projects;

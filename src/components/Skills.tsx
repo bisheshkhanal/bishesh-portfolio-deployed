@@ -13,10 +13,9 @@ import {
   SiPostgresql,
   SiMongodb,
   SiDocker,
-  SiAmazonwebservices,
   SiGithub,
 } from 'react-icons/si';
-import { FaJava } from 'react-icons/fa';
+import { FaAws, FaJava } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 
 // Map skill IDs to their react-icons components
@@ -34,7 +33,7 @@ const iconMap: Record<string, IconType> = {
   postgres: SiPostgresql,
   mongodb: SiMongodb,
   docker: SiDocker,
-  aws: SiAmazonwebservices,
+  aws: FaAws,
   github: SiGithub,
 };
 
@@ -59,7 +58,7 @@ export default function Skills() {
       y: 0,
       transition: {
         duration: 0.4,
-        ease: [0.5, 1, 0.5, 1],
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
       },
     },
   };
@@ -71,7 +70,7 @@ export default function Skills() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1],
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
       },
     },
   };
@@ -115,7 +114,7 @@ export default function Skills() {
                         transition={
                           shouldStagger
                             ? undefined
-                            : { duration: 0.4, ease: [0.5, 1, 0.5, 1], delay: 0 }
+                            : { duration: 0.4, ease: [0.5, 1, 0.5, 1] as [number, number, number, number], delay: 0 }
                         }
                       >
                         <div className="w-12 h-12 flex items-center justify-center mb-3">

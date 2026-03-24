@@ -8,9 +8,9 @@ export function createTopologyUniforms() {
 
     // Beat 1 — Bio
     // Lower intensity to survive additive blending without blowing out to white
-    uColorBioStrand1: { value: new Color('#0044ff') }, // Deep Blue/Cyan
-    uColorBioStrand2: { value: new Color('#ff1100') }, // Deep Red/Orange
-    uColorBioRung:    { value: new Color('#ffffff') }, // Pure White for contrast
+    uColorBioStrand1: { value: new Color('#0088ff') }, // Deep Blue
+    uColorBioStrand2: { value: new Color('#88ccff') }, // Glass/Light Blue
+    uColorBioRung:    { value: new Color('#ffffff') }, // Pure White
 
     // Beat 2 — Lattice
     uColorLatticeSlate: { value: new Color('#000000') }, // Pure black base
