@@ -18,19 +18,19 @@ export const BEAT_CONFIGS: BeatConfig[] = [
     scrollStart: 0.25,
     scrollEnd: 0.50,
     label: 'Computation',
-    copy: 'In agentic engineering, tokens are the DNA of language models. They don\'t create semantic meaning from nothing. They encode potential into discrete, computational units — a lattice of vectors waiting to be transformed.',
+    copy: 'In agentic engineering, tokens are the DNA of language models. They don\'t create semantic meaning from nothing. They flow through dual processing lanes, passing through staged gates where raw potential transforms into structured output.',
   },
   {
     scrollStart: 0.50,
     scrollEnd: 0.75,
     label: 'Maya',
-    copy: 'Beyond code and biology, this is how I view existence. The multiplicity of life — the chaos, the separate objects, the distinct events — is an encoding. An illusion. What the Vedantic tradition calls Maya.',
+    copy: 'This is where the framework locks into place. Perspective and movement are the encoding mechanism that generates units of experience — what the Vedantic tradition calls Maya. The apparent multiplicity of life is an illusion created by this encoding: unity fractured into discrete units through the lens of perspective.',
   },
   {
     scrollStart: 0.75,
     scrollEnd: 1.00,
     label: 'Brahman',
-    copy: 'Underneath the DNA, underneath the tokens, underneath the movement of life, is a single, continuous potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the underlying canvas.',
+    copy: 'Beneath appearance, beneath mechanism, beneath the encoding of units into multiplicity — there is a single, continuous potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the substrate beneath all four layers of this topology.',
   },
 ];
 
