@@ -320,6 +320,18 @@ void main() {
   // Apply transition motion
   finalPos += outwardOffset + fallOffset;
 
+  // Beat 3→4 transition: chaos resolving into order
+  float t34Phase = smoothstep(0.71, 0.79, uScroll);
+  float t34Arc = t34Phase * (1.0 - t34Phase) * 4.0; // peaks at midpoint
+  
+  float collapseY = -finalPos.y * t34Phase * uBeatWeights.z * 0.6;
+  vec3 collapseOffset = vec3(0.0, collapseY, 0.0);
+  
+  float convergenceStrength = t34Arc * uBeatWeights.z * 0.4;
+  vec3 convergenceOffset = vec3(-finalPos.x, 0.0, -finalPos.z) * convergenceStrength;
+  
+  finalPos += collapseOffset + convergenceOffset;
+
   vWorldY = finalPos.y;
 
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
