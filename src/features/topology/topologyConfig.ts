@@ -30,7 +30,7 @@ export const BEAT_CONFIGS: BeatConfig[] = [
     scrollStart: 0.75,
     scrollEnd: 1.00,
     label: 'Brahman',
-    copy: 'Beneath appearance, beneath mechanism, beneath the encoding of units into multiplicity — there is a single, continuous potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the substrate beneath all four layers of this topology.',
+    copy: 'Beneath appearance, beneath mechanism, beneath the encoding of units into multiplicity — there is a single, continuous truth, a potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the substrate beneath all four layers of this topology.',
   },
 ];
 
