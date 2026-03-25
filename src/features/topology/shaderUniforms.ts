@@ -8,9 +8,10 @@ export function createTopologyUniforms() {
 
     // Beat 1 — Bio
     // Lower intensity to survive additive blending without blowing out to white
-    uColorBioStrand1: { value: new Color('#0088ff') }, // Deep Blue
-    uColorBioStrand2: { value: new Color('#88ccff') }, // Glass/Light Blue
-    uColorBioRung:    { value: new Color('#ffffff') }, // Pure White
+    uColorBioStrand1: { value: new Color('#ff2a5f') }, // Crimson/Pink
+    uColorBioStrand2: { value: new Color('#00e5ff') }, // Cyan
+    uColorBioRung1:   { value: new Color('#ffb703') }, // Amber/Gold
+    uColorBioRung2:   { value: new Color('#a200ff') }, // Purple
 
     // Beat 2 — Lattice
     uColorLatticeSlate: { value: new Color('#000000') }, // Pure black base
@@ -19,8 +20,9 @@ export function createTopologyUniforms() {
 
     // Beat 4 — Plane
     uColorPlaneObsidian:  { value: new Color('#000000') }, // Pure black
-    uColorPlaneSilver:    { value: new Color('#223344') }, // Very dim silver
-    uColorPlaneMoonlight: { value: new Color('#112233') }, // Very dim moonlight
+    uColorPlaneSilver:    { value: new Color('#8899aa') }, // Visible silver
+    uColorPlaneMoonlight: { value: new Color('#334466') }, // Visible deep blue
+    uColorPlaneGold:      { value: new Color('#443322') }, // Faint golden warmth
 
     // Scene
     uCameraProgress:  { value: 0.0 },

@@ -20,6 +20,10 @@ varying float vHelixSide;
 varying float vRungMix;
 varying float vWorldY;
 varying float vIsDust;
+varying float vIsRung;
+varying float vRungT;
+varying float vRungIndex;
+varying float vWavePhase;
 
 // Constants
 const float PI = 3.14159265358979;
@@ -135,34 +139,145 @@ void main() {
   
   // Mix components
   float isRung = step(0.398, aRungMix); // Sharply reduce rung population
-  vec3 helixPos = mix(backbonePos, rungPos, isRung);
-  helixPos = mix(helixPos, dustPos, isDust);
+  vec3 legacyHelixPos = mix(backbonePos, rungPos, isRung);
+  legacyHelixPos = mix(legacyHelixPos, dustPos, isDust);
   
-  vIsDust = isDust;
-
-  // Beat 2 — Data Streams: clustered vertical columns
-  float streamId = floor(aLatticeMix * 16.0);
-  float sAngle = fract(sin(streamId * 12.9898) * 43758.5453) * PI * 2.0;
-  float sRadius = fract(sin(streamId * 78.233) * 43758.5453) * 4.0 + 1.0;
+  // ---------------------------------------------------------------------------
+  // Beat 1 Redesign — Anatomical DNA
+  // ---------------------------------------------------------------------------
+  float dnaRotations = 5.0; // Slightly fewer rotations for better legibility
+  float dnaRadius = 3.5;
+  float dnaHeight = 22.0;
   
-  vec3 latticePos;
-  latticePos.x = cos(sAngle) * sRadius + (aRandom.x - 0.5) * 0.3;
-  latticePos.z = sin(sAngle) * sRadius + (aRandom.y - 0.5) * 0.3;
+  float dnaAngle = aProgressIndex * dnaRotations * 2.0 * PI + uTime * 0.15;
+  float dnaPhaseOffset = aHelixSide * PI; // Two distinct backbones
+  float dnaTotalAngle = dnaAngle + dnaPhaseOffset;
   
-  float speed = 0.1 + fract(sin(streamId * 93.989) * 43758.5453) * 0.2;
-  float yPos = aProgressIndex - uTime * speed;
-  latticePos.y = (fract(yPos) - 0.5) * HEIGHT * 1.5;
+  float dnaY = (aProgressIndex - 0.5) * dnaHeight;
+  vec3 dnaBasePos = vec3(cos(dnaTotalAngle) * dnaRadius, dnaY, sin(dnaTotalAngle) * dnaRadius);
+  
+  // Backbone thickness (Anatomical ribbon)
+  float dnaSlope = dnaHeight / (dnaRotations * 2.0 * PI);
+  vec3 dnaTangent = normalize(vec3(-sin(dnaTotalAngle) * dnaRadius, dnaSlope, cos(dnaTotalAngle) * dnaRadius));
+  vec3 dnaNormal = normalize(vec3(cos(dnaTotalAngle), 0.0, sin(dnaTotalAngle)));
+  vec3 dnaBinormal = cross(dnaTangent, dnaNormal);
+  
+  // Ribbon shape: wider along the binormal (up/down), narrow along normal (in/out)
+  float ribbonW = 0.5 + 0.3 * abs(aRandom.x);
+  float ribbonH = 0.1 + 0.05 * abs(aRandom.y);
+  float ribbonTheta = aRandom.z * 2.0 * PI;
+  vec3 dnaBackboneOffset = dnaBinormal * (cos(ribbonTheta) * ribbonW) + dnaNormal * (sin(ribbonTheta) * ribbonH);
+  vec3 dnaBackbonePos = dnaBasePos + dnaBackboneOffset;
 
-  // Beat 3 — Chaos / Maya: 4D simplex noise fractures the helix
-  float noiseScale = 0.3;
-  float noiseSpeed = uTime * 0.5;
-  vec3 noiseInput = helixPos * noiseScale + vec3(aRandom.x, aRandom.y, noiseSpeed);
-  float nx = snoise(vec4(noiseInput, 0.0));
-  float ny = snoise(vec4(noiseInput + 31.416, 0.0));
-  float nz = snoise(vec4(noiseInput + 62.832, 0.0));
-  vec3 chaosPos = helixPos + vec3(nx, ny, nz) * uNoiseAmplitude;
+  // Rungs (Base Pairs)
+  float dnaNumRungs = 45.0; // More frequent, legible rungs
+  float dnaQuantizedProgress = (floor(aProgressIndex * dnaNumRungs) + 0.5) / dnaNumRungs;
+  float dnaRungAngle = dnaQuantizedProgress * dnaRotations * 2.0 * PI + uTime * 0.15;
+  float dnaRungY = (dnaQuantizedProgress - 0.5) * dnaHeight;
+  
+  vec3 dnaStrand1 = vec3(cos(dnaRungAngle) * dnaRadius, dnaRungY, sin(dnaRungAngle) * dnaRadius);
+  vec3 dnaStrand2 = vec3(cos(dnaRungAngle + PI) * dnaRadius, dnaRungY, sin(dnaRungAngle + PI) * dnaRadius);
+  
+  float dnaRungT = fract(abs(aRandom.x) * 13.37); // 0.0 to 1.0 along the rung
+  vec3 dnaRungBasePos = mix(dnaStrand1, dnaStrand2, dnaRungT);
+  
+  // Add slight twist/sag to the rungs
+  float rungSag = sin(dnaRungT * PI) * 0.3;
+  vec3 dnaRungPos = dnaRungBasePos + vec3(0.0, -rungSag, 0.0) + vec3(aRandom.y, aRandom.z, aRandom.x) * 0.05;
+  
+  // Dust
+  float dnaIsDust = step(0.85, abs(aRandom.z)); // Less dust, more focus on anatomy
+  float dnaDustR = dnaRadius + 1.5 + abs(aRandom.x) * 6.0;
+  float dnaDustAngle = aRandom.y * 2.0 * PI + uTime * 0.05;
+  float dnaDustY = (aRandom.z - 0.5) * dnaHeight * 1.2;
+  vec3 dnaDustPos = vec3(cos(dnaDustAngle) * dnaDustR, dnaDustY, sin(dnaDustAngle) * dnaDustR);
+  
+  // Mix components for Beat 1
+  float dnaIsRung = step(0.5, aRungMix); // Increase rung population
+  vec3 newHelixPos = mix(dnaBackbonePos, dnaRungPos, dnaIsRung);
+  newHelixPos = mix(newHelixPos, dnaDustPos, dnaIsDust);
+  
+  vec3 helixPos = newHelixPos; // Beat 1 geometry (isolated for future redesign)
+  
+  // Pass to fragment shader
+  vIsDust = dnaIsDust;
+  vIsRung = dnaIsRung;
+  vRungT = dnaRungT;
+  vRungIndex = dnaQuantizedProgress * dnaNumRungs;
+  vWavePhase = 0.0; // Safe default for non-Beat-3 paths
 
-  // Beat 4 — Plane / Brahman: flat obsidian mirror with micro-ripples
+  // ---------------------------------------------------------------------------
+  // Beat 2 Redesign — Token Processing Field
+  // ---------------------------------------------------------------------------
+  float bankDir = aHelixSide * 2.0 - 1.0; // -1 (left) or 1 (right)
+  float bankX = bankDir * 6.0; // Distance from center
+  
+  float numLanes = 3.0;
+  float laneId = floor(aLatticeMix * numLanes);
+  float laneOffset = (laneId - (numLanes - 1.0) * 0.5) * 2.5; // -2.5, 0, 2.5
+  
+  float processSpeed = 0.15;
+  float processHeight = HEIGHT * 1.5; // 30.0
+  float gateInterval = 5.0;
+  
+  float numTokens = 24.0;
+  float tokenIndex = floor(aProgressIndex * numTokens);
+  float tokenCenterProgress = (tokenIndex + 0.5) / numTokens;
+  float particleOffset = (aProgressIndex - tokenCenterProgress) * numTokens; // -0.5 to 0.5
+  
+  float tokenFlowY = tokenCenterProgress - uTime * processSpeed;
+  float tokenWrappedY = fract(tokenFlowY);
+  float tokenRawY = (tokenWrappedY - 0.5) * processHeight;
+  
+  float nearestGateY = floor(tokenRawY / gateInterval + 0.5) * gateInterval;
+  float distToGate = abs(tokenRawY - nearestGateY);
+  float gateInfluence = smoothstep(gateInterval * 0.3, 0.0, distToGate);
+  
+  float tokenWarpedY = mix(tokenRawY, nearestGateY, gateInfluence * 0.8);
+  float tokenCompression = mix(1.0, 0.15, gateInfluence);
+  
+  // Token internal structure (4x4 grid)
+  float gridX = floor((aRandom.x * 0.5 + 0.5) * 4.0);
+  float gridZ = floor((aRandom.y * 0.5 + 0.5) * 4.0);
+  float tokenGridX = (gridX - 1.5) * 0.3;
+  float tokenGridZ = (gridZ - 1.5) * 0.3;
+  
+  // Jitter to fill the volume
+  float jitterX = aRandom.y * 0.15;
+  float jitterZ = aRandom.z * 0.15;
+  float jitterY = aRandom.x * 0.15;
+  
+  float horizontalSpread = mix(1.0, 2.5, gateInfluence);
+  
+  vec3 processPos;
+  processPos.x = bankX + laneOffset + (tokenGridX + jitterX) * horizontalSpread;
+  processPos.y = tokenWarpedY + (particleOffset * 1.2 + jitterY) * tokenCompression;
+  processPos.z = (tokenGridZ + jitterZ) * horizontalSpread;
+  
+  // Add a subtle "processing" vibration when inside the gate
+  processPos.x += aRandom.y * 0.2 * gateInfluence;
+  processPos.z += aRandom.z * 0.2 * gateInfluence;
+  
+  vec3 latticePos = processPos;
+
+  // Beat 3 — Maya: Lattice-based wave interference
+  // 3 overlapping sine-wave systems with distinct directions/frequencies/speeds
+  float w1 = sin(latticePos.x * 0.8 + latticePos.y * 0.4 + uTime * 1.5);
+  float w2 = sin(latticePos.y * 1.2 - latticePos.z * 0.6 + uTime * 0.9);
+  float w3 = sin(latticePos.z * 0.9 + latticePos.x * 1.1 - uTime * 2.1);
+  
+  // Combine waves to create interference pattern
+  float interference = (w1 + w2 + w3) / 3.0;
+  
+  // Export phase for prismatic color mapping in fragment shader
+  vWavePhase = interference * 0.5 + 0.5; // Normalize to 0.0 - 1.0
+  
+  // Apply deformation using uNoiseAmplitude as wave amplitude
+  // 2.5 is a tuning constant to boost the visual displacement
+  vec3 waveOffset = vec3(w1, w2, w3) * uNoiseAmplitude * 2.5;
+  vec3 chaosPos = latticePos + waveOffset;
+
+  // Beat 4 — Plane / Brahman: luminous underlying field
   // Map normalized aProgressIndex to a 2D grid to ensure uniform coverage without lines
   float gridRes = 600.0;
   float cell = aProgressIndex * gridRes * gridRes;
@@ -176,8 +291,11 @@ void main() {
   float planeX = (planeNx - 0.5) * 40.0;
   float planeZ = (planeNz - 0.5) * 40.0;
   
-  float planeY = sin(planeX * 10.0 + uTime * 2.0) * 0.01
-               + sin(planeZ * 10.0 + uTime * 2.3) * 0.01;
+  float planeY = sin(planeX * 10.0 + uTime * 2.0) * 0.08
+               + sin(planeZ * 10.0 + uTime * 2.3) * 0.08;
+               
+  planeY += sin(planeX * 0.3 + uTime * 0.4) * 0.06
+          + sin(planeZ * 0.3 + uTime * 0.5) * 0.06;
                
   vec3 planePos = vec3(planeX, planeY, planeZ);
 
