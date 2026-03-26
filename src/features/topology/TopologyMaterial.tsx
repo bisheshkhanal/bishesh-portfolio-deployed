@@ -28,7 +28,8 @@ export function useTopologyMaterial(externalUniforms?: Partial<TopologyUniforms>
 
   // Sync external uniform overrides each frame
   useFrame(({ clock }) => {
-    uniformsRef.current.uTime.value = clock.elapsedTime;
+    const isE2E = typeof window !== 'undefined' && (window as any).__DNA_E2E__ === true;
+    uniformsRef.current.uTime.value = isE2E ? 0 : clock.elapsedTime;
     if (externalUniforms) {
       for (const key of Object.keys(externalUniforms) as Array<keyof TopologyUniforms>) {
         if (key in uniformsRef.current && externalUniforms[key] !== undefined) {
