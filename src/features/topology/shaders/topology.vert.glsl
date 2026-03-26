@@ -24,12 +24,10 @@ varying float vIsRung;
 varying float vRungT;
 varying float vRungIndex;
 varying float vWavePhase;
+varying float vDelay;
 
 // Constants
 const float PI = 3.14159265358979;
-const float ROTATIONS = 8.0;
-const float RADIUS = 3.0;
-const float HEIGHT = 20.0;
 
 // ─── Ashima 4D Simplex Noise (MIT License) ───────────────────────────────────
 // https://github.com/ashima/webgl-noise
@@ -95,116 +93,80 @@ void main() {
   vHelixSide = aHelixSide;
   vRungMix = aRungMix;
 
-  // Beat 1 — Helix: double strand with rung connectors
-  float angle = aProgressIndex * ROTATIONS * 2.0 * PI + uTime * 0.2;
-  float phaseOffset = aHelixSide * PI;
-  float totalAngle = angle + phaseOffset;
-  
-  float helixX = cos(totalAngle) * RADIUS;
-  float helixZ = sin(totalAngle) * RADIUS;
-  float helixY = (aProgressIndex - 0.5) * HEIGHT;
-  vec3 baseHelixPos = vec3(helixX, helixY, helixZ);
-  
-  // Backbone thickness (Narrow shell/annulus)
-  float slope = HEIGHT / (ROTATIONS * 2.0 * PI);
-  vec3 tangent = normalize(vec3(-sin(totalAngle) * RADIUS, slope, cos(totalAngle) * RADIUS));
-  vec3 normal = normalize(vec3(cos(totalAngle), 0.0, sin(totalAngle)));
-  vec3 binormal = cross(tangent, normal);
-  
-  float rOffset = 0.15 + 0.1 * abs(aRandom.x); // Tight annulus instead of filled circle
-  float thetaOffset = aRandom.y * 2.0 * PI;
-  vec3 backboneOffset = normal * (cos(thetaOffset) * rOffset) + binormal * (sin(thetaOffset) * rOffset);
-  vec3 backbonePos = baseHelixPos + backboneOffset;
-
-  // Discrete rungs
-  float numRungs = 10.0;
-  float quantizedProgress = (floor(aProgressIndex * numRungs) + 0.5) / numRungs;
-  float jitter = (aRandom.y - 0.5) * 0.08; // Tiny angle jitter to reduce moire/combing
-  float rungAngle = quantizedProgress * ROTATIONS * 2.0 * PI + uTime * 0.2 + jitter;
-  float rungY = (quantizedProgress - 0.5) * HEIGHT + (aRandom.z - 0.5) * 0.1;
-  
-  vec3 strand1 = vec3(cos(rungAngle) * RADIUS, rungY, sin(rungAngle) * RADIUS);
-  vec3 strand2 = vec3(cos(rungAngle + PI) * RADIUS, rungY, sin(rungAngle + PI) * RADIUS);
-  
-  float rungT = fract(abs(aRandom.x) * 13.37);
-  vec3 rungBasePos = mix(strand1, strand2, rungT);
-  vec3 rungPos = rungBasePos + vec3(aRandom.y, aRandom.z, aRandom.x) * 0.02;
-  
-  // Dust
-  float isDust = step(0.72, abs(aRandom.z));
-  float dustR = RADIUS + 2.0 + abs(aRandom.x) * 7.5; // Start outside the helix mass
-  float dustAngle = aRandom.y * 2.0 * PI + uTime * 0.1;
-  float dustY = (aRandom.z - 0.5) * HEIGHT * 1.5; // Symmetric vertical placement
-  vec3 dustPos = vec3(cos(dustAngle) * dustR, dustY, sin(dustAngle) * dustR);
-  
-  // Mix components
-  float isRung = step(0.398, aRungMix); // Sharply reduce rung population
-  vec3 legacyHelixPos = mix(backbonePos, rungPos, isRung);
-  legacyHelixPos = mix(legacyHelixPos, dustPos, isDust);
-  
   // ---------------------------------------------------------------------------
-  // Beat 1 Redesign — Anatomical DNA
+  // Beat 1 Redesign — ykob Math and Visuals (Ground-Up Rewrite)
+  // Copyright (c) 2021 Yoichi Kobayashi
+  // Released under the MIT license
+  // http://opensource.org/licenses/mit-license.php
   // ---------------------------------------------------------------------------
-  float dnaRotations = 5.0; // Slightly fewer rotations for better legibility
-  float dnaRadius = 3.5;
-  float dnaHeight = 22.0;
-  
-  float dnaAngle = aProgressIndex * dnaRotations * 2.0 * PI + uTime * 0.15;
-  float dnaPhaseOffset = aHelixSide * PI; // Two distinct backbones
-  float dnaTotalAngle = dnaAngle + dnaPhaseOffset;
-  
-  float dnaY = (aProgressIndex - 0.5) * dnaHeight;
-  vec3 dnaBasePos = vec3(cos(dnaTotalAngle) * dnaRadius, dnaY, sin(dnaTotalAngle) * dnaRadius);
-  
-  // Backbone thickness (Anatomical ribbon)
-  float dnaSlope = dnaHeight / (dnaRotations * 2.0 * PI);
-  vec3 dnaTangent = normalize(vec3(-sin(dnaTotalAngle) * dnaRadius, dnaSlope, cos(dnaTotalAngle) * dnaRadius));
-  vec3 dnaNormal = normalize(vec3(cos(dnaTotalAngle), 0.0, sin(dnaTotalAngle)));
-  vec3 dnaBinormal = cross(dnaTangent, dnaNormal);
-  
-  // Ribbon shape: wider along the binormal (up/down), narrow along normal (in/out)
-  float ribbonW = 0.5 + 0.3 * abs(aRandom.x);
-  float ribbonH = 0.1 + 0.05 * abs(aRandom.y);
-  float ribbonTheta = aRandom.z * 2.0 * PI;
-  vec3 dnaBackboneOffset = dnaBinormal * (cos(ribbonTheta) * ribbonW) + dnaNormal * (sin(ribbonTheta) * ribbonH);
-  vec3 dnaBackbonePos = dnaBasePos + dnaBackboneOffset;
+  // SYNC NOTE: These values must match HELIX_CONFIG in src/features/topology/topologyConfig.ts
+  float dnaRotations = 3.5;
+  float dnaRadius = 5.0; // SCALED UP
+  float dnaHeight = 45.0; // SCALED UP
 
-  // Rungs (Base Pairs)
-  float dnaNumRungs = 45.0; // More frequent, legible rungs
-  float dnaQuantizedProgress = (floor(aProgressIndex * dnaNumRungs) + 0.5) / dnaNumRungs;
-  float dnaRungAngle = dnaQuantizedProgress * dnaRotations * 2.0 * PI + uTime * 0.15;
-  float dnaRungY = (dnaQuantizedProgress - 0.5) * dnaHeight;
+  // Derive delay only from phase, no random scatter noise
+  float delay = (aRandom.x * 0.5 + 0.5) * 6.2832;
+  vDelay = delay;
+
+  // Map progress to Y-axis
+  float progress = clamp(aProgressIndex, 0.0, 1.0);
+  float baseY = mix(-dnaHeight * 0.5, dnaHeight * 0.5, progress);
+
+  // Kobayashi-style shared oscillation:
+  // - added to helix axis (Y)
+  float yVib = sin(uTime * 4.0 + delay) * 0.3;
+  float y = baseY + yVib;
+  float radius = dnaRadius;
+
+  // Y-axis-aligned helix angle, animated like the original
+  float angle = progress * dnaRotations * 2.0 * PI + uTime * 0.4;
+
+  // Two strand phases (offset by exactly PI)
+  float strandPhase = aHelixSide * PI;
+  float angleMain = angle + strandPhase;
+  float angleA = angle;
+  float angleB = angle + PI;
+
+  // Main strand position
+  vec3 strandPos = vec3(
+    sin(angleMain) * radius,
+    y,
+    cos(angleMain) * radius
+  );
+
+  // Rung endpoints at the same Y/phase, spanning between strands
+  vec3 rungA = vec3(sin(angleA) * radius, y, cos(angleA) * radius);
+  vec3 rungB = vec3(sin(angleB) * radius, y, cos(angleB) * radius);
+
+  // Use ~50% of particles as rungs.
+  // aRungMix in [0.0, 0.2] => rung particles, remapped to [0.0, 1.0]
+  float isRung = 1.0 - step(0.2, aRungMix);
+  float rungT = clamp(aRungMix / 0.2, 0.0, 1.0);
+
+  // Final helix position (no random scatter, volume comes purely from volumeOsc)
+  vec3 rawHelixPos = mix(
+    strandPos,
+    mix(rungA, rungB, rungT),
+    isRung
+  );
+
+  // DIAGONAL ROTATION (Bottom-Left to Top-Right)
+  // Rotate ~45 degrees (0.785 rad) around the Z axis
+  float diagAngle = -0.785; // Negative to go bottom-left to top-right
+  mat3 rotZ = mat3(
+    cos(diagAngle), -sin(diagAngle), 0.0,
+    sin(diagAngle),  cos(diagAngle), 0.0,
+    0.0,             0.0,            1.0
+  );
   
-  vec3 dnaStrand1 = vec3(cos(dnaRungAngle) * dnaRadius, dnaRungY, sin(dnaRungAngle) * dnaRadius);
-  vec3 dnaStrand2 = vec3(cos(dnaRungAngle + PI) * dnaRadius, dnaRungY, sin(dnaRungAngle + PI) * dnaRadius);
-  
-  float dnaRungT = fract(abs(aRandom.x) * 13.37); // 0.0 to 1.0 along the rung
-  vec3 dnaRungBasePos = mix(dnaStrand1, dnaStrand2, dnaRungT);
-  
-  // Add slight twist/sag to the rungs
-  float rungSag = sin(dnaRungT * PI) * 0.3;
-  vec3 dnaRungPos = dnaRungBasePos + vec3(0.0, -rungSag, 0.0) + vec3(aRandom.y, aRandom.z, aRandom.x) * 0.05;
-  
-  // Dust
-  float dnaIsDust = step(0.85, abs(aRandom.z)); // Less dust, more focus on anatomy
-  float dnaDustR = dnaRadius + 1.5 + abs(aRandom.x) * 6.0;
-  float dnaDustAngle = aRandom.y * 2.0 * PI + uTime * 0.05;
-  float dnaDustY = (aRandom.z - 0.5) * dnaHeight * 1.2;
-  vec3 dnaDustPos = vec3(cos(dnaDustAngle) * dnaDustR, dnaDustY, sin(dnaDustAngle) * dnaDustR);
-  
-  // Mix components for Beat 1
-  float dnaIsRung = step(0.5, aRungMix); // Increase rung population
-  vec3 newHelixPos = mix(dnaBackbonePos, dnaRungPos, dnaIsRung);
-  newHelixPos = mix(newHelixPos, dnaDustPos, dnaIsDust);
-  
-  vec3 helixPos = newHelixPos; // Beat 1 geometry (isolated for future redesign)
-  
+  vec3 helixPos = rotZ * rawHelixPos;
+
   // Pass to fragment shader
-  vIsDust = dnaIsDust;
-  vIsRung = dnaIsRung;
-  vRungT = dnaRungT;
-  vRungIndex = dnaQuantizedProgress * dnaNumRungs;
-  vWavePhase = 0.0; // Safe default for non-Beat-3 paths
+  vIsDust = 0.0; // Disable dust for this aesthetic, focus entirely on the volumetric strands
+  vIsRung = isRung;
+  vRungT = rungT;
+  vRungIndex = floor(progress * 48.0); // Quantize for color pairing
+  vWavePhase = 0.0;
 
   // ---------------------------------------------------------------------------
   // Beat 2 Redesign — Token Processing Field
@@ -217,7 +179,7 @@ void main() {
   float laneOffset = (laneId - (numLanes - 1.0) * 0.5) * 2.5; // -2.5, 0, 2.5
   
   float processSpeed = 0.15;
-  float processHeight = HEIGHT * 1.5; // 30.0
+  float processHeight = 30.0; // 30.0
   float gateInterval = 5.0;
   
   float numTokens = 24.0;
@@ -307,18 +269,17 @@ void main() {
 
   // Custom transition between Beat 1 and Beat 2
   float transitionPhase = smoothstep(0.21, 0.29, uScroll);
-  float transArc = transitionPhase * (1.0 - transitionPhase) * 4.0;
+  // Instead of falling, the particles smoothly interpolate their positions 
+  // towards the lattice positions during the transition window.
+  // We use a noise field to make the flow look organic rather than linear.
+  float flowNoise = snoise(vec4(finalPos * 0.1, uTime * 0.5)) * 0.5 + 0.5;
+  float flowEased = smoothstep(0.0, 1.0, transitionPhase);
   
-  // Outward push based on helix side
-  float sideDir = aHelixSide * 2.0 - 1.0;
-  vec3 outwardOffset = vec3(sideDir * 12.0 * transArc, 0.0, 0.0);
+  // Blend the helix position towards the lattice position organically
+  vec3 flowOffset = (latticePos - finalPos) * flowEased * flowNoise;
   
-  // Fall downward with quadratic acceleration, staggered by progress index
-  float fallAmount = -50.0 * (transitionPhase * transitionPhase) * (1.0 - transitionPhase) * (1.0 + aProgressIndex);
-  vec3 fallOffset = vec3(0.0, fallAmount, 0.0);
-  
-  // Apply transition motion
-  finalPos += outwardOffset + fallOffset;
+  // Only apply this flow offset while Beat 1 is still active
+  finalPos += flowOffset * uBeatWeights.x;
 
   // Beat 3→4 transition: chaos resolving into order
   float t34Phase = smoothstep(0.71, 0.79, uScroll);
@@ -337,8 +298,14 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
   vDepth = clamp((-mvPosition.z - 2.0) / 30.0, 0.0, 1.0);
 
-  float pointSize = aSize * uPointScale * (300.0 / -mvPosition.z);
+  float basePointSize = aSize * uPointScale * (300.0 / -mvPosition.z);
+  float pointSize = basePointSize;
   pointSize *= mix(1.0, 2.5, vIsDust); // Boost dust point size
-  gl_PointSize = clamp(pointSize, 0.5, mix(4.0, 6.0, vIsDust));
+  
+  float ykobPointMax = 8.0;
+  float beat1PointSize = clamp(pointSize * 1.5, 2.0, 8.0);
+  float otherPointSize = clamp(pointSize, 0.5, mix(4.0, 6.0, vIsDust));
+  
+  gl_PointSize = mix(otherPointSize, beat1PointSize, uBeatWeights.x);
   gl_Position = projectionMatrix * mvPosition;
 }

@@ -12,7 +12,7 @@ export interface ParticleBuffers {
 export const PARTICLE_COUNTS = {
   low: 100_000,    // mobile / low-end
   medium: 300_000, // mid-range
-  high: 500_000,   // desktop
+  high: 15_000,    // desktop
   ultra: 1_000_000 // high-end desktop
 } as const;
 

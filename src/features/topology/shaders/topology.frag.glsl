@@ -2,8 +2,6 @@
 uniform vec4 uBeatWeights;
 uniform vec3 uColorBioStrand1;
 uniform vec3 uColorBioStrand2;
-uniform vec3 uColorBioRung1;
-uniform vec3 uColorBioRung2;
 uniform vec3 uColorLatticeSlate;
 uniform vec3 uColorLatticeCyan;
 uniform vec3 uColorLatticeGreen;
@@ -23,6 +21,7 @@ varying float vIsRung;
 varying float vRungT;
 varying float vRungIndex;
 varying float vWavePhase;
+varying float vDelay;
 
 // Helper for prismatic color mapping
 vec3 hsv2rgb(vec3 c) {
@@ -37,37 +36,47 @@ void main() {
   float dist = length(uv);
   if (dist > 0.5) discard;
   float alpha = smoothstep(0.5, 0.1, dist);
-  float strandCore = smoothstep(0.38, 0.0, dist);
-  float dustCore = smoothstep(0.42, 0.02, dist);
 
-  // Beat 1: Bio — separate dense strands, sparse rungs, and atmospheric dust
+  // ---------------------------------------------------------------------------
+  // Beat 1 Redesign — ykob Math and Visuals (Ground-Up Rewrite)
+  // Copyright (c) 2021 Yoichi Kobayashi
+  // Released under the MIT license
+  // http://opensource.org/licenses/mit-license.php
+  // ---------------------------------------------------------------------------
   float side = step(0.5, vHelixSide);
   vec3 strandColor = mix(uColorBioStrand1, uColorBioStrand2, side);
-
-  float strandMask = (1.0 - vIsRung) * (1.0 - vIsDust);
-  float rungMask = vIsRung * (1.0 - vIsDust);
-  float dustMask = vIsDust;
-
-  // Base pair colors (A-T, C-G)
-  // Use vRungIndex to determine which pair type it is
-  float pairType = step(0.5, fract(vRungIndex * 0.618)); // Pseudo-random pair type
   
-  // Color the two halves of the rung differently
-  vec3 rungColorLeft = mix(uColorBioRung1, uColorBioRung2, pairType);
-  vec3 rungColorRight = mix(uColorBioRung2, uColorBioRung1, pairType);
-  
+  // Base pair colors (using strand colors since rung colors were removed)
+  float pairType = step(0.5, fract(vRungIndex * 0.618));
+  vec3 rungColorLeft = mix(uColorBioStrand1, uColorBioStrand2, pairType);
+  vec3 rungColorRight = mix(uColorBioStrand2, uColorBioStrand1, pairType);
   vec3 rungBaseColor = mix(rungColorLeft, rungColorRight, step(0.5, vRungT));
-
-  // Break the remaining comb read by letting only a subset of rung particles glow strongly.
-  float rungPulse = smoothstep(0.55, 0.95, fract(vProgressIndex * 37.0 + vHelixSide * 11.0));
-
-  vec3 dimStrandColor = strandColor * mix(0.6, 0.3, vDepth);
-  vec3 rungColor = rungBaseColor * mix(1.2, 0.8, vDepth) * mix(0.7, 1.0, rungPulse);
-  vec3 dustColor = mix(strandColor, vec3(0.82, 0.92, 1.0), 0.72) * mix(0.5, 0.25, vDepth);
-
-  vec3 bioColor = dimStrandColor * strandMask
-                + rungColor * rungMask
-                + dustColor * dustMask;
+  
+  // Select base color
+  vec3 baseParticleColor = mix(strandColor, rungBaseColor, vIsRung);
+  
+  // --- KOBAYASHI-INSPIRED COLOR & SHAPE ---
+  vec2 uvPoint = gl_PointCoord;
+  vec2 center = vec2(0.5);
+  
+  // Distance from center, scaled up slightly for the ring
+  float r = length(uvPoint - center) * 2.5;
+  
+  // Hollow glow shape
+  float core = (1.0 - smoothstep(0.5, 0.7, r)) * 0.5;
+  float ring = smoothstep(0.8, 0.9, r) * smoothstep(1.2, 1.0, r) * 0.5;
+  float bioShape = core + ring;
+  
+  // Color variation based on delay
+  float rVal = 0.8 - vDelay * 0.1;
+  rVal = clamp(rVal, 0.17, 0.8);
+  vec3 kobColor = vec3(rVal, 0.6, 0.6);
+  
+  // Combine shape with base color and Kobayashi variation
+  vec3 bioColor = baseParticleColor * kobColor * bioShape;
+  
+  // Boost intensity for luminous cloud effect
+  bioColor *= 1.5;
 
   // Beat 2: Token Processing Field
   float gateInterval = 5.0;
@@ -117,13 +126,14 @@ void main() {
                   + chaosColor   * uBeatWeights.z
                   + planeColor   * uBeatWeights.w;
 
-  // Adjust alpha to prevent blowout
-  float strandAlpha = strandCore * mix(0.07, 0.03, vDepth);
-  float rungAlpha = alpha * mix(0.09, 0.04, vDepth) * mix(0.6, 1.0, rungPulse);
-  float dustAlpha = dustCore * mix(0.04, 0.018, vDepth);
-  float bioAlpha = strandAlpha * strandMask
-                 + rungAlpha * rungMask
-                 + dustAlpha * dustMask;
+  // Alpha calculation
+  float edgeMask = 1.0 - smoothstep(0.4, 0.5, length(uvPoint - center));
+  
+  // Depth fading
+  float depthFade = mix(1.0, 0.1, vDepth);
+  
+  // Final Beat 1 Alpha
+  float bioAlpha = bioShape * edgeMask * depthFade * 0.8;
 
   // Beat 1 & 2 need enough alpha to be visible but not blow out
   float baseAlpha = alpha * (0.04 + vDepth * 0.02);

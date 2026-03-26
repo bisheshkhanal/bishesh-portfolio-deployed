@@ -8,10 +8,8 @@ export function createTopologyUniforms() {
 
     // Beat 1 — Bio
     // Lower intensity to survive additive blending without blowing out to white
-    uColorBioStrand1: { value: new Color('#ff2a5f') }, // Crimson/Pink
-    uColorBioStrand2: { value: new Color('#00e5ff') }, // Cyan
-    uColorBioRung1:   { value: new Color('#ffb703') }, // Amber/Gold
-    uColorBioRung2:   { value: new Color('#a200ff') }, // Purple
+    uColorBioStrand1: { value: new Color('#2C9999') }, // Teal
+    uColorBioStrand2: { value: new Color('#CC9999') }, // Dusty Pink
 
     // Beat 2 — Lattice
     uColorLatticeSlate: { value: new Color('#000000') }, // Pure black base
