@@ -269,17 +269,18 @@ void main() {
 
   // Custom transition between Beat 1 and Beat 2
   float transitionPhase = smoothstep(0.21, 0.29, uScroll);
-  // Instead of falling, the particles smoothly interpolate their positions 
-  // towards the lattice positions during the transition window.
-  // We use a noise field to make the flow look organic rather than linear.
-  float flowNoise = snoise(vec4(finalPos * 0.1, uTime * 0.5)) * 0.5 + 0.5;
-  float flowEased = smoothstep(0.0, 1.0, transitionPhase);
+  float transArc = transitionPhase * (1.0 - transitionPhase) * 4.0;
   
-  // Blend the helix position towards the lattice position organically
-  vec3 flowOffset = (latticePos - finalPos) * flowEased * flowNoise;
+  // Outward push based on helix side
+  float sideDir = aHelixSide * 2.0 - 1.0;
+  vec3 outwardOffset = vec3(sideDir * 12.0 * transArc, 0.0, 0.0);
   
-  // Only apply this flow offset while Beat 1 is still active
-  finalPos += flowOffset * uBeatWeights.x;
+  // Fall downward with quadratic acceleration, staggered by progress index
+  float fallAmount = -50.0 * (transitionPhase * transitionPhase) * (1.0 - transitionPhase) * (1.0 + aProgressIndex);
+  vec3 fallOffset = vec3(0.0, fallAmount, 0.0);
+  
+  // Apply transition motion
+  finalPos += outwardOffset + fallOffset;
 
   // Beat 3→4 transition: chaos resolving into order
   float t34Phase = smoothstep(0.71, 0.79, uScroll);

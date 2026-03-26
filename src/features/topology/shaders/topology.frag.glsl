@@ -43,24 +43,9 @@ void main() {
   // Released under the MIT license
   // http://opensource.org/licenses/mit-license.php
   // ---------------------------------------------------------------------------
-  float side = step(0.5, vHelixSide);
-  vec3 strandColor = mix(uColorBioStrand1, uColorBioStrand2, side);
-  
-  // Base pair colors (using strand colors since rung colors were removed)
-  float pairType = step(0.5, fract(vRungIndex * 0.618));
-  vec3 rungColorLeft = mix(uColorBioStrand1, uColorBioStrand2, pairType);
-  vec3 rungColorRight = mix(uColorBioStrand2, uColorBioStrand1, pairType);
-  vec3 rungBaseColor = mix(rungColorLeft, rungColorRight, step(0.5, vRungT));
-  
-  // Select base color
-  vec3 baseParticleColor = mix(strandColor, rungBaseColor, vIsRung);
-  
   // --- KOBAYASHI-INSPIRED COLOR & SHAPE ---
-  vec2 uvPoint = gl_PointCoord;
-  vec2 center = vec2(0.5);
-  
   // Distance from center, scaled up slightly for the ring
-  float r = length(uvPoint - center) * 2.5;
+  float r = length(gl_PointCoord - vec2(0.5)) * 2.0;
   
   // Hollow glow shape
   float core = (1.0 - smoothstep(0.5, 0.7, r)) * 0.5;
@@ -72,11 +57,11 @@ void main() {
   rVal = clamp(rVal, 0.17, 0.8);
   vec3 kobColor = vec3(rVal, 0.6, 0.6);
   
-  // Combine shape with base color and Kobayashi variation
-  vec3 bioColor = baseParticleColor * kobColor * bioShape;
+  // Dim rungs
+  kobColor = mix(kobColor, kobColor * 0.7, vIsRung);
   
-  // Boost intensity for luminous cloud effect
-  bioColor *= 1.5;
+  // Combine shape with base color and Kobayashi variation
+  vec3 bioColor = kobColor * bioShape;
 
   // Beat 2: Token Processing Field
   float gateInterval = 5.0;
@@ -126,14 +111,8 @@ void main() {
                   + chaosColor   * uBeatWeights.z
                   + planeColor   * uBeatWeights.w;
 
-  // Alpha calculation
-  float edgeMask = 1.0 - smoothstep(0.4, 0.5, length(uvPoint - center));
-  
-  // Depth fading
-  float depthFade = mix(1.0, 0.1, vDepth);
-  
   // Final Beat 1 Alpha
-  float bioAlpha = bioShape * edgeMask * depthFade * 0.8;
+  float bioAlpha = bioShape * mix(1.0, 0.3, vDepth);
 
   // Beat 1 & 2 need enough alpha to be visible but not blow out
   float baseAlpha = alpha * (0.04 + vDepth * 0.02);
