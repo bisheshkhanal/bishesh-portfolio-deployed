@@ -16,6 +16,8 @@ varying float vProgressIndex;
 varying float vHelixSide;
 varying float vRungMix;
 varying float vWorldY;
+varying float vWorldX;
+varying float vWorldZ;
 varying float vIsDust;
 varying float vIsRung;
 varying float vRungT;
@@ -90,26 +92,26 @@ void main() {
   float value = mix(0.4, 1.0, smoothstep(0.5, 1.0, vWavePhase));
   vec3 chaosColor = hsv2rgb(vec3(hue, saturation, value));
 
-  // Beat 4: Plane — luminous underlying field
-  // vWorldY ranges from ~-0.14 to 0.14
-  float waveCrest = smoothstep(0.0, 0.14, vWorldY);
-  float deepTrough = smoothstep(0.0, -0.14, vWorldY);
-  
-  // Depth-based color shift: deeper = cooler/bluer, shallower = warmer/silver
-  vec3 fieldColor = mix(uColorPlaneSilver, uColorPlaneMoonlight, vDepth);
-  
-  // Base luminous glow (deep indigo-black base)
-  vec3 planeBase = mix(uColorPlaneObsidian, fieldColor, 0.15);
-  
-  // Brighter coherence bands at wave crests
-  vec3 crestColor = mix(fieldColor, uColorPlaneGold, smoothstep(0.08, 0.14, vWorldY));
-  
-  vec3 planeColor = mix(planeBase, crestColor, waveCrest * 0.8);
+  // Beat 4: Torus — geometry-based coloring
+  // Distance from Y-axis (center hole): inner edge R-r=8, outer edge R+r=16
+  float distFromCenter = length(vec2(vWorldX, vWorldZ));
+
+  // Inner edge of torus (R - r = 8) to outer edge (R + r = 16)
+  float innerEdge = smoothstep(8.0, 10.0, distFromCenter);
+  float outerEdge = smoothstep(14.0, 16.0, distFromCenter);
+
+  // Base color: obsidian at inner edge, silver at outer
+  vec3 torusBase = mix(uColorPlaneObsidian, uColorPlaneSilver, innerEdge);
+  torusBase = mix(torusBase, uColorPlaneMoonlight, outerEdge * 0.5);
+
+  // Gold coherence bands at top of torus (positive Y)
+  float topBand = smoothstep(0.0, 4.0, vWorldY);
+  vec3 torusColor = mix(torusBase, uColorPlaneGold, topBand * 0.6);
 
   vec3 finalColor = bioColor   * uBeatWeights.x
                   + latticeColor * uBeatWeights.y
                   + chaosColor   * uBeatWeights.z
-                  + planeColor   * uBeatWeights.w;
+                  + torusColor   * uBeatWeights.w;
 
   // Final Beat 1 Alpha
   float bioAlpha = bioShape * mix(1.0, 0.3, vDepth);

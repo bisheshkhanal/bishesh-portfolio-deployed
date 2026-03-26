@@ -40,3 +40,9 @@ export const HELIX_CONFIG = {
   RADIUS: 3.0,
   HEIGHT: 20.0,
 } as const;
+
+// Torus geometry constants for Beat 4 (Brahman)
+export const TORUS_CONFIG = {
+  MAJOR_RADIUS: 12.0,  // R - distance from center of tube to center of torus
+  MINOR_RADIUS: 4.0,   // r - radius of the tube
+} as const;

@@ -19,6 +19,8 @@ varying float vProgressIndex;
 varying float vHelixSide;
 varying float vRungMix;
 varying float vWorldY;
+varying float vWorldX;
+varying float vWorldZ;
 varying float vIsDust;
 varying float vIsRung;
 varying float vRungT;
@@ -239,33 +241,36 @@ void main() {
   vec3 waveOffset = vec3(w1, w2, w3) * uNoiseAmplitude * 2.5;
   vec3 chaosPos = latticePos + waveOffset;
 
-  // Beat 4 — Plane / Brahman: luminous underlying field
-  // Map normalized aProgressIndex to a 2D grid to ensure uniform coverage without lines
+  // Beat 4 — Torus / Brahman: infinite self-similar structure
+  // Torus lies flat with hole along Y axis, so (0,0,0) is inside the hole
   float gridRes = 600.0;
   float cell = aProgressIndex * gridRes * gridRes;
   float cx = mod(floor(cell), gridRes);
   float cz = floor(cell / gridRes);
-  
+
   vec2 rv = hash12(aProgressIndex * 123456.789);
-  float planeNx = (cx + rv.x) / gridRes;
-  float planeNz = (cz + rv.y) / gridRes;
-  
-  float planeX = (planeNx - 0.5) * 40.0;
-  float planeZ = (planeNz - 0.5) * 40.0;
-  
-  float planeY = sin(planeX * 10.0 + uTime * 2.0) * 0.08
-               + sin(planeZ * 10.0 + uTime * 2.3) * 0.08;
-               
-  planeY += sin(planeX * 0.3 + uTime * 0.4) * 0.06
-          + sin(planeZ * 0.3 + uTime * 0.5) * 0.06;
-               
-  vec3 planePos = vec3(planeX, planeY, planeZ);
+  float torusU = (cx + rv.x) / gridRes; // 0→1 around major radius (theta)
+  float torusV = (cz + rv.y) / gridRes; // 0→1 around minor radius (phi)
+
+  // Parametric torus equations
+  float theta = torusU * 2.0 * PI + uTime * 0.1; // slow rotation
+  float phi = torusV * 2.0 * PI;
+  float R = 12.0; // major radius (center to tube center)
+  float r = 4.0;  // minor radius (tube radius)
+
+  // Breathing effect using existing snoise
+  float breathNoise = snoise(vec4(torusU * 2.0, torusV * 2.0, uTime * 0.2, 0.0)) * 0.3;
+
+  vec3 torusPos;
+  torusPos.x = (R + (r + breathNoise) * cos(phi)) * cos(theta);
+  torusPos.y = (r + breathNoise) * sin(phi);
+  torusPos.z = (R + (r + breathNoise) * cos(phi)) * sin(theta);
 
   // Blend all four beats
   vec3 finalPos = helixPos   * uBeatWeights.x
                 + latticePos * uBeatWeights.y
                 + chaosPos   * uBeatWeights.z
-                + planePos   * uBeatWeights.w;
+                + torusPos   * uBeatWeights.w;
 
   // Custom transition between Beat 1 and Beat 2
   float transitionPhase = smoothstep(0.21, 0.29, uScroll);
@@ -282,19 +287,17 @@ void main() {
   // Apply transition motion
   finalPos += outwardOffset + fallOffset;
 
-  // Beat 3→4 transition: chaos resolving into order
+  // Beat 3→4 transition: chaos converging to torus surface
   float t34Phase = smoothstep(0.71, 0.79, uScroll);
-  float t34Arc = t34Phase * (1.0 - t34Phase) * 4.0; // peaks at midpoint
-  
-  float collapseY = -finalPos.y * t34Phase * uBeatWeights.z * 0.6;
-  vec3 collapseOffset = vec3(0.0, collapseY, 0.0);
-  
-  float convergenceStrength = t34Arc * uBeatWeights.z * 0.4;
-  vec3 convergenceOffset = vec3(-finalPos.x, 0.0, -finalPos.z) * convergenceStrength;
-  
-  finalPos += collapseOffset + convergenceOffset;
+
+  // Converge towards the torus surface instead of collapsing to origin
+  vec3 toTorus = torusPos - finalPos;
+  vec3 t34Offset = toTorus * t34Phase * uBeatWeights.z * 0.5;
+  finalPos += t34Offset;
 
   vWorldY = finalPos.y;
+  vWorldX = finalPos.x;
+  vWorldZ = finalPos.z;
 
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
   vDepth = clamp((-mvPosition.z - 2.0) / 30.0, 0.0, 1.0);
