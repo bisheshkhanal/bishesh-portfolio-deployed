@@ -117,10 +117,9 @@ void main() {
   // Beat 1 & 2 need enough alpha to be visible but not blow out
   float baseAlpha = alpha * (0.04 + vDepth * 0.02);
   
-  // Beat 4 needs extremely low alpha because of the dense particle grid (500k particles)
-  // Even a tiny alpha will add up to bright white if we're not careful
+  // Beat 4 alpha adjusted for the new lower particle count (15k instead of 500k)
   float waveCrestAlpha = smoothstep(0.0, 0.14, vWorldY);
-  float planeAlpha = alpha * (0.012 + vDepth * 0.008);
+  float planeAlpha = alpha * (0.15 + vDepth * 0.1);
   planeAlpha *= (1.0 + waveCrestAlpha * 0.5);
   
   float finalAlpha = bioAlpha * uBeatWeights.x

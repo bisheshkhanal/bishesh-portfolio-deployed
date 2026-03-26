@@ -162,7 +162,7 @@ void main() {
   vec3 helixPos = rotZ * rawHelixPos;
 
   // Pass to fragment shader
-  vIsDust = 0.0; // Disable dust for this aesthetic, focus entirely on the volumetric strands
+  vIsDust = step(0.72, abs(aRandom.z)); // Restored for shared point sizing
   vIsRung = isRung;
   vRungT = rungT;
   vRungIndex = floor(progress * 48.0); // Quantize for color pairing
