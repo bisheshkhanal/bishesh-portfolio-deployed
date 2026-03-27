@@ -129,7 +129,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   return (
     <div 
       ref={placeholderRef}
-      className={`relative w-full h-[220px] md:w-[400px] md:h-[280px] ${className}`}
+      className={`relative w-full h-[400px] md:h-[450px] ${className}`}
     >
       <div
         ref={portalRef}
