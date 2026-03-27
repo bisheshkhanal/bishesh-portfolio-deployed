@@ -119,7 +119,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
       portalStyle.top = 0;
       portalStyle.left = 0;
       portalStyle.width = '100vw';
-      portalStyle.height = '100vh';
+      portalStyle.height = '100dvh';
       portalStyle.borderRadius = 0;
     } else if (rect) {
       portalStyle.top = rect.top;
@@ -138,7 +138,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   return (
     <div 
       ref={placeholderRef}
-      className={`relative w-full h-[400px] md:h-[450px] ${className}`}
+      className={`relative w-full h-[300px] md:h-[450px] ${className}`}
     >
       <div
         ref={portalRef}
@@ -164,7 +164,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
               handleCollapse();
             }}
             aria-label="Return to page"
-            className="absolute top-6 px-4 py-2 text-sm text-[var(--gray)] border border-[var(--border)] bg-[var(--bg-black)] rounded-md"
+            className="absolute top-6 px-4 py-2 min-h-[44px] min-w-[44px] text-sm text-[var(--gray)] border border-[var(--border)] bg-[var(--bg-black)] rounded-md flex items-center justify-center"
             style={{
               right: 'calc(var(--sidebar-width) + 1.5rem)',
               zIndex: 10001,
