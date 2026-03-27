@@ -10,10 +10,10 @@ export interface ParticleBuffers {
 }
 
 export const PARTICLE_COUNTS = {
-  low: 100_000,    // mobile / low-end
-  medium: 300_000, // mid-range
-  high: 15_000,    // desktop
-  ultra: 1_000_000 // high-end desktop
+  low: 15_000,     // mobile / low-end
+  medium: 40_000,  // mid-range
+  high: 80_000,    // desktop
+  ultra: 200_000   // high-end desktop
 } as const;
 
 export type ParticleTier = keyof typeof PARTICLE_COUNTS;
@@ -39,7 +39,7 @@ export function generateParticleBuffers(count: number): ParticleBuffers {
   for (let i = 0; i < count; i++) {
     aProgressIndex[i] = i / count;
     aHelixSide[i] = i % 2;
-    aRungMix[i] = lcg(i * 7 + 1)() * 0.4;
+    aRungMix[i] = lcg(i * 7 + 1)() * 0.667;
     aLatticeMix[i] = lcg(i * 13 + 3)();
     
     aPlaneUv[i * 2 + 0] = lcg(i * 17 + 5)();

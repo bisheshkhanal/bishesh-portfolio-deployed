@@ -35,10 +35,11 @@ export const BEAT_CONFIGS: BeatConfig[] = [
 ];
 
 // Helix geometry constants
+// These values MUST match the hardcoded constants in topology.vert.glsl lines ~105-107
 export const HELIX_CONFIG = {
-  ROTATIONS: 8,
-  RADIUS: 3.0,
-  HEIGHT: 20.0,
+  ROTATIONS: 3.5,
+  RADIUS: 5.0,
+  HEIGHT: 45.0,
 } as const;
 
 // Torus geometry constants for Beat 4 (Brahman)
