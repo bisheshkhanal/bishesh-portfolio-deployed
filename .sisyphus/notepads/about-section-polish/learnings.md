@@ -57,4 +57,11 @@
 - Maintained the existing `id="about-section"` and section padding.
 - Successfully ran `npx tsc --noEmit` and committed the changes.
 - Took a Playwright screenshot of the updated layout.
- - ScenePortal already had the conditional `cursor-pointer` class on the portal div, so only `frameloop` needed to change to keep the topology scene animating in both preview and expanded states.
+  - ScenePortal already had the conditional `cursor-pointer` class on the portal div, so only `frameloop` needed to change to keep the topology scene animating in both preview and expanded states.
+
+## [2026-03-27] T3 Preview Mode Beat Lock
+
+- Added `previewMode?: boolean` to `useTopologyScrollState(previewMode)` and kept `useScroll()` unconditional to preserve hooks/context correctness under `<ScrollControls>`.
+- Implemented the preview bypass inside `useFrame`: when `previewMode` is true, state now uses `computeScrollState(0)` every frame, which yields beat-1 weights (`Vector4(1,0,0,0)`) while keeping animation live.
+- Threaded `previewMode` through `TopologyScene` → `TopologySceneInner` → `TopologyContent` to keep `/about` unchanged (prop omitted there, so scroll-driven behavior remains default).
+- Updated `ScenePortal` to pass `previewMode={!isOpen}` so the collapsed panel always renders beat 1 and expanded mode restores normal scroll-driven beats.

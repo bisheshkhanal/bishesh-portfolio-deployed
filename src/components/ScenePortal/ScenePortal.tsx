@@ -175,6 +175,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
           <TopologyScene
             particleCount={particleCount}
             frameloop="always"
+            previewMode={!isOpen}
           />
         </SceneErrorBoundary>
       </div>
