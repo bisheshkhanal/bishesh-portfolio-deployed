@@ -64,8 +64,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   };
 
   const handleCollapse = () => {
-    if (!isOpen || isTransitioning.current) return;
-    isTransitioning.current = true;
+    if (!isOpen) return;
     if (placeholderRef.current) {
       // Re-measure in case window resized while expanded
       setRect(placeholderRef.current.getBoundingClientRect());
