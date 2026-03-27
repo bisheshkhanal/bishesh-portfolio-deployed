@@ -76,11 +76,14 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('portal-open');
     } else {
       document.body.style.overflow = '';
+      document.body.classList.remove('portal-open');
     }
     return () => {
       document.body.style.overflow = '';
+      document.body.classList.remove('portal-open');
     };
   }, [isOpen]);
 

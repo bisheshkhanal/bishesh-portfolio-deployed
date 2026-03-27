@@ -51,6 +51,11 @@ code {
   pointer-events: auto !important;
 }
 
+/* Hide DNA sidebar when portal is fullscreen */
+.portal-open [data-testid="dna-canvas"] {
+  visibility: hidden;
+}
+
 @layer utilities {
   .bg-diagonal-grid {
     background-image:
