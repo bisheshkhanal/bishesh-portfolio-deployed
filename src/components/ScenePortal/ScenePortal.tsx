@@ -174,7 +174,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
         >
           <TopologyScene
             particleCount={particleCount}
-            frameloop={isOpen ? "always" : "demand"}
+            frameloop="always"
           />
         </SceneErrorBoundary>
       </div>
