@@ -43,9 +43,11 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  const isTransitioning = useRef(false);
 
   const handleExpand = () => {
-    if (isOpen) return;
+    if (isOpen || isTransitioning.current) return;
+    isTransitioning.current = true;
     if (placeholderRef.current) {
       setRect(placeholderRef.current.getBoundingClientRect());
       setIsOpen(true);
@@ -62,7 +64,8 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   };
 
   const handleCollapse = () => {
-    if (!isOpen) return;
+    if (!isOpen || isTransitioning.current) return;
+    isTransitioning.current = true;
     if (placeholderRef.current) {
       // Re-measure in case window resized while expanded
       setRect(placeholderRef.current.getBoundingClientRect());
@@ -94,6 +97,9 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   const handleTransitionEnd = (e: React.TransitionEvent) => {
     if (e.target === portalRef.current && !isFullscreen) {
       setIsOpen(false);
+    }
+    if (e.target === portalRef.current) {
+      isTransitioning.current = false;
     }
   };
 

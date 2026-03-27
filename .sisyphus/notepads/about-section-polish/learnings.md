@@ -65,3 +65,9 @@
 - Implemented the preview bypass inside `useFrame`: when `previewMode` is true, state now uses `computeScrollState(0)` every frame, which yields beat-1 weights (`Vector4(1,0,0,0)`) while keeping animation live.
 - Threaded `previewMode` through `TopologyScene` → `TopologySceneInner` → `TopologyContent` to keep `/about` unchanged (prop omitted there, so scroll-driven behavior remains default).
 - Updated `ScenePortal` to pass `previewMode={!isOpen}` so the collapsed panel always renders beat 1 and expanded mode restores normal scroll-driven beats.
+
+## [2026-03-27] ScenePortal Rapid-Click Guard
+
+- Added `isTransitioning` ref guard to `ScenePortal` so expand/collapse clicks are ignored while a CSS transition is in flight.
+- `handleExpand` and `handleCollapse` now set the guard before starting state changes, and `handleTransitionEnd` clears it when the portal element finishes transitioning.
+- This prevents the portal from getting stuck in mixed states during rapid click/tap sequences.
