@@ -75,11 +75,13 @@ function TopologySceneInner({ particleCount }: { particleCount: number }) {
 
 export interface TopologySceneProps {
   particleCount?: number;
+  frameloop?: 'always' | 'demand';
 }
 
-export function TopologyScene({ particleCount = PARTICLE_COUNTS.high }: TopologySceneProps) {
+export function TopologyScene({ particleCount = PARTICLE_COUNTS.high, frameloop = 'always' }: TopologySceneProps) {
   return (
     <Canvas
+      frameloop={frameloop}
       camera={{ position: [8, 5, 12], fov: 50 }}
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: false }}

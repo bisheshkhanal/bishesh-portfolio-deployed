@@ -18,6 +18,7 @@ const COLORS = {
   base: '#e0e0e0',      // Light gray for strand particles (from spec)
   strand: '#cccccc',    // Slightly dimmer for depth
   hero: '#4ea2ff',      // Blue (Top - scroll-to-top)
+  about: '#9b59b6',     // Purple
   projects: '#ff9500',  // Orange (Middle - Projects section)
   skills: '#00d9ff',    // Cyan (Bottom - Skills section)
   glow: '#ffffff'       // White for progress indicator
@@ -34,7 +35,7 @@ const PARAMS = {
   revealFade: 4         // Soft fade edges for gradient
 } as const;
 
-type SectionId = 'hero' | 'projects' | 'skills';
+type SectionId = 'hero' | 'about' | 'projects' | 'skills';
 
 const BASE_HEIGHT = 40;
 const BASE_RADIUS = 3;
@@ -136,6 +137,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   const baseColorsRef = useRef<THREE.Color[] | null>(null);
   const markerScreenPositionsRef = useRef<Record<SectionId, { x: number; y: number; visible: boolean }>>({
     hero: { x: 0, y: 0, visible: false },
+    about: { x: 0, y: 0, visible: false },
     projects: { x: 0, y: 0, visible: false },
     skills: { x: 0, y: 0, visible: false }
   });
@@ -180,6 +182,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const indicesBySection: Record<SectionId, number> = {
       hero: indexFor('hero'),
+      about: indexFor('about'),
       projects: indexFor('projects'),
       skills: indexFor('skills')
     };
@@ -239,18 +242,18 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       const yPos = toWorldY(point.y);
       tempObject.position.set(point.x, yPos, point.z);
 
-      const isCluster = !!sectionId;
-      tempObject.scale.setScalar(isCluster ? visualParams.clusterScale : visualParams.baseScale);
-      tempObject.updateMatrix();
+    const isCluster = !!sectionId;
+    tempObject.scale.setScalar(isCluster ? visualParams.clusterScale : visualParams.baseScale);
+    tempObject.updateMatrix();
 
-      meshRef.current!.setMatrixAt(index, tempObject.matrix);
+    meshRef.current!.setMatrixAt(index, tempObject.matrix);
 
-      // Store Y position for progressive reveal
-      yPositions[index] = yPos;
+    // Store Y position for progressive reveal
+    yPositions[index] = yPos;
 
-      // Set color - CRITICAL FIX for black nucleotides
-      if (isCluster && sectionId) {
-        color.set(COLORS[sectionId]);
+    // Set color - CRITICAL FIX for black nucleotides
+    if (isCluster && sectionId && COLORS[sectionId]) {
+      color.set(COLORS[sectionId]);
       } else {
         // Base particles - light gray with depth variation
         const depthFactor = (point.z + radius) / (2 * radius);
@@ -356,7 +359,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   useEffect(() => {
     const eventSourceEl = (events?.connected ?? null) as HTMLElement | null;
     const canvasEl = gl.domElement as HTMLElement | null;
-    const rectTarget = eventSourceEl ?? canvasEl ?? (typeof window !== 'undefined' ? document.documentElement : null);
+    const rectTarget = eventSourceEl ?? canvasEl ?? null;
     if (!rectTarget) return;
 
     const fallbackRadius = isE2E ? 200 : 80;
@@ -368,6 +371,10 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       const rect = rectTarget.getBoundingClientRect();
       const x = pointerEvent.clientX - rect.left;
       const y = pointerEvent.clientY - rect.top;
+
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+        return;
+      }
 
       const markers = markerScreenPositionsRef.current;
       let closestSection: SectionId | null = null;
@@ -402,12 +409,9 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     const targets = new Set<EventTarget>();
     if (eventSourceEl) targets.add(eventSourceEl);
     if (canvasEl) targets.add(canvasEl);
-    if (typeof window !== 'undefined') targets.add(window);
 
     targets.forEach((target) => {
       target.addEventListener('pointerdown', handlePointerDown);
-      target.addEventListener('mousedown', handlePointerDown);
-      target.addEventListener('click', handlePointerDown);
     });
     if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
       (window as any).__DNA_DEBUG__.fallbackListenerAttached = true;
@@ -415,8 +419,6 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     return () => {
       targets.forEach((target) => {
         target.removeEventListener('pointerdown', handlePointerDown);
-        target.removeEventListener('mousedown', handlePointerDown);
-        target.removeEventListener('click', handlePointerDown);
       });
     };
   }, [events?.connected, gl, isE2E, triggerNavigate]);
@@ -498,6 +500,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       {
         const markers: Record<SectionId, { x: number; y: number; visible: boolean }> = {
           hero: { x: 0, y: 0, visible: false },
+          about: { x: 0, y: 0, visible: false },
           projects: { x: 0, y: 0, visible: false },
           skills: { x: 0, y: 0, visible: false }
         };
@@ -515,7 +518,12 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
           const x = (vector.x * 0.5 + 0.5) * cssWidth;
           const y = (-(vector.y * 0.5) + 0.5) * cssHeight;
-          const visible = Math.abs(vector.z) < 1;
+          const visible =
+            Math.abs(vector.z) < 1 &&
+            x >= 0 &&
+            x <= cssWidth &&
+            y >= 0 &&
+            y <= cssHeight;
 
           markers[sectionId] = { x, y, visible };
         });
@@ -574,8 +582,9 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const localIdx = instanceId < strand1.length ? instanceId : instanceId - strand1.length;
     const sectionId = clusterIndices[localIdx];
-    if (sectionId && onNavigate) {
-      onNavigate(sectionId);
+    if (sectionId) {
+      lastRaycastClickRef.current = performance.now();
+      triggerNavigate(sectionId);
     }
   };
 

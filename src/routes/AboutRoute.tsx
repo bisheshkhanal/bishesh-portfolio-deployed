@@ -1,5 +1,5 @@
 import { AboutExperience } from '../features/topology/AboutExperience';
 
 export default function AboutRoute() {
-  return <AboutExperience />;
+  return <AboutExperience style={{ position: 'absolute', inset: 0 }} />;
 }

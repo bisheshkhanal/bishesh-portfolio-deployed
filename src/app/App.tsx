@@ -1,5 +1,4 @@
 import { BrowserRouter, NavLink, Outlet, Route, Routes } from 'react-router-dom';
-import Contact from '../components/Contact';
 import DNAHelix from '../components/DNAHelix/DNAHelix';
 import { MainLayout } from '../layouts/MainLayout';
 import { ImmersiveLayout } from '../layouts/ImmersiveLayout';
@@ -14,7 +13,6 @@ const shellLinks: ReadonlyArray<{ to: string; label: string; end?: boolean }> = 
   { to: '/work', label: 'Work' },
   { to: '/experiments', label: 'Experiments' },
   { to: '/writing', label: 'Writing' },
-  { to: '/about', label: 'About' },
 ];
 
 function ShellNavigation() {

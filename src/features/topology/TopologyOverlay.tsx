@@ -40,7 +40,7 @@ function BeatPanel({ beat, index }: { beat: typeof BEAT_CONFIGS[0]; index: numbe
     <div
       ref={ref}
       style={{
-        height: '100vh',
+        height: '100dvh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: isEven ? 'flex-start' : 'flex-end',
@@ -102,7 +102,7 @@ function BeatPanel({ beat, index }: { beat: typeof BEAT_CONFIGS[0]; index: numbe
 export function TopologyOverlay() {
   return (
     <Scroll html>
-      <div style={{ width: '100vw' }}>
+      <div style={{ width: '100%' }}>
         {BEAT_CONFIGS.map((beat, i) => (
           <BeatPanel key={beat.label} beat={beat} index={i} />
         ))}

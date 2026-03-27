@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-export type DNAMarkerId = 'hero' | 'projects' | 'skills';
+export type DNAMarkerId = 'hero' | 'projects' | 'skills' | 'about';
 
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 
@@ -9,12 +9,14 @@ type MarkerYs = Record<DNAMarkerId, number>;
 
 const DEFAULT_MARKER_TS: MarkerTs = {
   hero: 0,
-  projects: 0.5,
-  skills: 1
+  projects: 0.4,
+  skills: 0.75,
+  about: 0.9
 };
 
 const DEFAULT_VIEWPORT_YS: MarkerYs = {
   hero: 0,
+  about: 0,
   projects: 0,
   skills: 0
 };
@@ -36,17 +38,19 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
     const heroHeading = document.querySelector('#hero h1') as HTMLElement | null;
     const projectsHeading = document.querySelector('#projects h2') as HTMLElement | null;
     const skillsHeading = document.querySelector('#skills h2') as HTMLElement | null;
+    const aboutSection = document.getElementById('about-section');
     const contactSection = document.getElementById('contact');
 
-    if (!heroHeading || !projectsHeading || !skillsHeading || !contactSection) return;
+    if (!heroHeading || !projectsHeading || !skillsHeading || !aboutSection || !contactSection) return;
 
     const heroAnchorY = getAnchorY(heroHeading);
     const projectsAnchorY = getAnchorY(projectsHeading);
     const skillsAnchorY = getAnchorY(skillsHeading);
+    const aboutAnchorY = getAnchorY(aboutSection);
     const contactRect = contactSection.getBoundingClientRect();
     const contactBottomY = window.scrollY + contactRect.bottom;
 
-    if (heroAnchorY === null || projectsAnchorY === null || skillsAnchorY === null) return;
+    if (heroAnchorY === null || projectsAnchorY === null || skillsAnchorY === null || aboutAnchorY === null) return;
 
     const scrollStartY = heroAnchorY;
     const scrollEndY = contactBottomY - window.innerHeight;
@@ -54,12 +58,14 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
 
     const nextMarkerTs: MarkerTs = {
       hero: clamp01((heroAnchorY - scrollStartY) / range),
+      about: clamp01((aboutAnchorY - scrollStartY) / range),
       projects: clamp01((projectsAnchorY - scrollStartY) / range),
       skills: clamp01((skillsAnchorY - scrollStartY) / range)
     };
 
     anchorYsRef.current = {
       hero: heroAnchorY,
+      about: aboutAnchorY,
       projects: projectsAnchorY,
       skills: skillsAnchorY
     };
@@ -67,6 +73,7 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
     setMarkerTs(nextMarkerTs);
     setViewportYs({
       hero: heroAnchorY - window.scrollY,
+      about: aboutAnchorY - window.scrollY,
       projects: projectsAnchorY - window.scrollY,
       skills: skillsAnchorY - window.scrollY
     });
@@ -111,6 +118,7 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
       const scrollY = window.scrollY;
       setViewportYs({
         hero: anchors.hero - scrollY,
+        about: anchors.about - scrollY,
         projects: anchors.projects - scrollY,
         skills: anchors.skills - scrollY
       });

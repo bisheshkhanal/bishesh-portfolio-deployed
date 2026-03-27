@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:4173',
@@ -21,8 +21,9 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      testMatch: /about-scene\.spec\.ts/,
-      testIgnore: [/Reduced Motion/],
+      testMatch: /e2e\/.*\.spec\.ts/,
+      testIgnore: [/@reduced-motion/],
+      grep: /@desktop/,
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
@@ -37,8 +38,9 @@ export default defineConfig({
     },
     {
       name: 'reduced-motion',
-      testMatch: /about-scene\.spec\.ts/,
-      testIgnore: [/Desktop/],
+      testMatch: /e2e\/.*\.spec\.ts/,
+      testIgnore: [/@desktop/],
+      grep: /@reduced-motion/,
       use: {
         ...devices['Desktop Chrome'],
         contextOptions: {
@@ -56,7 +58,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4173',
+    command: 'npm run build && node ./node_modules/vite/bin/vite.js preview --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

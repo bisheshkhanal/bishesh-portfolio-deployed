@@ -42,8 +42,16 @@ const clamp = (value: number, min: number, max: number): number =>
 
 export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const sectionIds = useMemo(() => ['hero', 'projects', 'skills'], []);
+  // Observe DOM elements: 'about-section' instead of Hero's legacy 'about'
+  // Map back to logical marker id for helix highlighting
+  const sectionIds = useMemo(() => ['hero', 'projects', 'skills', 'about-section'], []);
   const activeSection = useActiveSection(sectionIds);
+
+  // Map 'about-section' DOM id back to logical marker id 'about'
+  const helixActiveSection = useMemo(() => {
+    return activeSection === 'about-section' ? 'about' : activeSection;
+  }, [activeSection]);
+
   const { markerTs } = useDNAMarkerAnchors();
   const isE2E = typeof window !== 'undefined' && window.__DNA_E2E__ === true;
   
@@ -114,16 +122,18 @@ export default function DNAHelix() {
 
   useEffect(() => {
     if ((import.meta.env.DEV || isE2E) && window.__DNA_DEBUG__) {
-      window.__DNA_DEBUG__.activeSection = activeSection;
+      window.__DNA_DEBUG__.activeSection = helixActiveSection;
     }
-  }, [activeSection, isE2E]);
+  }, [helixActiveSection, isE2E]);
 
   const handleNavigate = useCallback((id: string) => {
     if (id === 'hero') {
       window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
       return;
     }
-    const el = document.getElementById(id);
+    // Map helix 'about' marker to the actual DOM element id='about-section'
+    const targetId = id === 'about' ? 'about-section' : id;
+    const el = document.getElementById(targetId);
     if (el) {
       el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
@@ -153,7 +163,7 @@ export default function DNAHelix() {
         <Scene
             scrollProgress={smoothProgress}
             onNavigate={handleNavigate}
-            activeSection={activeSection}
+            activeSection={helixActiveSection}
             isE2E={isE2E}
             markerTs={markerTs}
             className="w-full h-full"
