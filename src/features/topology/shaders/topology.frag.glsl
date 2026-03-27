@@ -55,35 +55,40 @@ void main() {
   float bioShape = core + ring;
   
   // Color variation based on delay
-  float rVal = 0.8 - vDelay * 0.1;
-  rVal = clamp(rVal, 0.17, 0.8);
-  vec3 kobColor = vec3(rVal, 0.6, 0.6);
-  
-  // Dim rungs
-  kobColor = mix(kobColor, kobColor * 0.7, vIsRung);
+  // Strand color: cyan from uniform, modulated by delay for subtle variation
+  vec3 strandColor = uColorBioStrand1 * (0.7 + vDelay * 0.05);
+  // Rung color: white/green from uniform, brighter to stand out as base pairs
+  vec3 rungColor = uColorBioStrand2 * 1.2;
+  // Blend strand vs rung based on vIsRung
+  vec3 kobColor = mix(strandColor, rungColor, vIsRung);
   
   // Combine shape with base color and Kobayashi variation
   vec3 bioColor = kobColor * bioShape;
 
-  // Beat 2: Token Processing Field
-  float gateInterval = 5.0;
-  float nearestGateY = floor(vWorldY / gateInterval + 0.5) * gateInterval;
-  float distToGate = abs(vWorldY - nearestGateY);
-  
-  // Gate glow: bright when particles are compressed at the gate
-  float gateGlow = smoothstep(0.8, 0.0, distToGate);
-  
-  // Processed state: enter at top (+Y) as Cyan, exit at bottom (-Y) as Green
-  float processState = smoothstep(10.0, -10.0, vWorldY);
-  vec3 tokenActive = mix(uColorLatticeCyan, uColorLatticeGreen, processState);
-  
-  vec3 tokenBase = uColorLatticeSlate + tokenActive * 0.15; // Dim when traveling
-  
-  // Traveling pulse
-  float pulsePhase = fract(vWorldY * 0.15 + uTime * 1.5);
-  float pulse = smoothstep(0.7, 0.9, pulsePhase) * smoothstep(1.0, 0.9, pulsePhase);
-  
-  vec3 latticeColor = tokenBase + tokenActive * pulse + tokenActive * gateGlow * 2.5;
+  // Beat 2: Quantized Embedding Matrix — orange tokens, green attention flash
+  // IMPORTANT: Cannot use vWavePhase for attention state — Beat 3 overwrites it with
+  // interference value. Recompute isAttended here from vProgressIndex + uTime directly,
+  // using the same formula as the vertex shader Beat 2 section.
+  float numTokensFrag = 30.0;
+  float tokenIdxFrag = floor(vProgressIndex * numTokensFrag);
+  float attentionSpeedFrag = 0.4;
+  float attentionPhaseFrag = fract(uTime * attentionSpeedFrag - tokenIdxFrag / numTokensFrag);
+  float isAttended = smoothstep(0.85, 1.0, attentionPhaseFrag);
+
+  // Base token color: orange (raw/unprocessed data)
+  vec3 tokenRaw = uColorLatticeCyan; // uniform repurposed to orange (see shaderUniforms.ts)
+  // Attended token color: bright green (active processing)
+  vec3 tokenActive = uColorLatticeGreen;
+
+  // Resting state: dim orange glow
+  vec3 tokenBase = uColorLatticeSlate + tokenRaw * 0.3;
+  // Attention flash: bright green burst
+  vec3 attentionFlash = tokenActive * isAttended * 3.0;
+  // Subtle inner glow that pulses with time (independent of attention)
+  float innerPulse = 0.5 + 0.5 * sin(uTime * 2.0 + vProgressIndex * 10.0);
+  vec3 tokenGlow = tokenRaw * innerPulse * 0.2;
+
+  vec3 latticeColor = tokenBase + tokenGlow + attentionFlash;
 
   // Beat 3: Maya — Prismatic color derived from wave interference
   // Hue shifts with phase, saturation drops at peaks (vWavePhase -> 1.0) for white-hot interference

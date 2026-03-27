@@ -117,7 +117,8 @@ void main() {
   // Kobayashi-style shared oscillation:
   // - added to helix axis (Y)
   float yVib = sin(uTime * 4.0 + delay) * 0.3;
-  float y = baseY + yVib;
+  float peristaltic = sin(uTime * 3.0 + aProgressIndex * 20.0) * 0.15;
+  float y = baseY + yVib + peristaltic;
   float radius = dnaRadius;
 
   // Y-axis-aligned helix angle, animated like the original
@@ -126,8 +127,6 @@ void main() {
   // Two strand phases (offset by exactly PI)
   float strandPhase = aHelixSide * PI;
   float angleMain = angle + strandPhase;
-  float angleA = angle;
-  float angleB = angle + PI;
 
   // Main strand position
   vec3 strandPos = vec3(
@@ -136,9 +135,13 @@ void main() {
     cos(angleMain) * radius
   );
 
-  // Rung endpoints at the same Y/phase, spanning between strands
-  vec3 rungA = vec3(sin(angleA) * radius, y, cos(angleA) * radius);
-  vec3 rungB = vec3(sin(angleB) * radius, y, cos(angleB) * radius);
+  // Quantize rung positions to discrete base-pair intervals
+  float numBasePairs = 24.0;
+  float rungQuantized = floor(aProgressIndex * numBasePairs) / numBasePairs;
+  float rungBaseY = mix(-dnaHeight * 0.5, dnaHeight * 0.5, rungQuantized);
+  float rungAngle = rungQuantized * dnaRotations * 2.0 * PI + uTime * 0.4;
+  vec3 rungAq = vec3(sin(rungAngle) * radius, rungBaseY, cos(rungAngle) * radius);
+  vec3 rungBq = vec3(sin(rungAngle + PI) * radius, rungBaseY, cos(rungAngle + PI) * radius);
 
   // Use ~50% of particles as rungs.
   // aRungMix in [0.0, 0.2] => rung particles, remapped to [0.0, 1.0]
@@ -148,9 +151,14 @@ void main() {
   // Final helix position (no random scatter, volume comes purely from volumeOsc)
   vec3 rawHelixPos = mix(
     strandPos,
-    mix(rungA, rungB, rungT),
+    mix(rungAq, rungBq, rungT),
     isRung
   );
+
+  float rungJitterAmp = isRung * 0.04;
+  float rungJitter = sin(uTime * 9.0 + aRandom.x * 15.0) * rungJitterAmp;
+  rawHelixPos.x += rungJitter * aRandom.y;
+  rawHelixPos.z += rungJitter * aRandom.z;
 
   // DIAGONAL ROTATION (Bottom-Left to Top-Right)
   // Rotate ~45 degrees (0.785 rad) around the Z axis
@@ -171,58 +179,57 @@ void main() {
   vWavePhase = 0.0;
 
   // ---------------------------------------------------------------------------
-  // Beat 2 Redesign — Token Processing Field
+  // Beat 2 Redesign — Quantized Embedding Matrix
+  // 30 token blocks in a 6x5 grid representing discrete LLM tokens
   // ---------------------------------------------------------------------------
-  float bankDir = aHelixSide * 2.0 - 1.0; // -1 (left) or 1 (right)
-  float bankX = bankDir * 6.0; // Distance from center
-  
-  float numLanes = 3.0;
-  float laneId = floor(aLatticeMix * numLanes);
-  float laneOffset = (laneId - (numLanes - 1.0) * 0.5) * 2.5; // -2.5, 0, 2.5
-  
-  float processSpeed = 0.15;
-  float processHeight = 30.0; // 30.0
-  float gateInterval = 5.0;
-  
-  float numTokens = 24.0;
-  float tokenIndex = floor(aProgressIndex * numTokens);
-  float tokenCenterProgress = (tokenIndex + 0.5) / numTokens;
-  float particleOffset = (aProgressIndex - tokenCenterProgress) * numTokens; // -0.5 to 0.5
-  
-  float tokenFlowY = tokenCenterProgress - uTime * processSpeed;
-  float tokenWrappedY = fract(tokenFlowY);
-  float tokenRawY = (tokenWrappedY - 0.5) * processHeight;
-  
-  float nearestGateY = floor(tokenRawY / gateInterval + 0.5) * gateInterval;
-  float distToGate = abs(tokenRawY - nearestGateY);
-  float gateInfluence = smoothstep(gateInterval * 0.3, 0.0, distToGate);
-  
-  float tokenWarpedY = mix(tokenRawY, nearestGateY, gateInfluence * 0.8);
-  float tokenCompression = mix(1.0, 0.15, gateInfluence);
-  
-  // Token internal structure (4x4 grid)
-  float gridX = floor((aRandom.x * 0.5 + 0.5) * 4.0);
-  float gridZ = floor((aRandom.y * 0.5 + 0.5) * 4.0);
-  float tokenGridX = (gridX - 1.5) * 0.3;
-  float tokenGridZ = (gridZ - 1.5) * 0.3;
-  
-  // Jitter to fill the volume
-  float jitterX = aRandom.y * 0.15;
-  float jitterZ = aRandom.z * 0.15;
-  float jitterY = aRandom.x * 0.15;
-  
-  float horizontalSpread = mix(1.0, 2.5, gateInfluence);
-  
-  vec3 processPos;
-  processPos.x = bankX + laneOffset + (tokenGridX + jitterX) * horizontalSpread;
-  processPos.y = tokenWarpedY + (particleOffset * 1.2 + jitterY) * tokenCompression;
-  processPos.z = (tokenGridZ + jitterZ) * horizontalSpread;
-  
-  // Add a subtle "processing" vibration when inside the gate
-  processPos.x += aRandom.y * 0.2 * gateInfluence;
-  processPos.z += aRandom.z * 0.2 * gateInfluence;
-  
-  vec3 latticePos = processPos;
+  float numTokens = 30.0;
+  float tokenIdx = floor(aProgressIndex * numTokens);
+  float tokenCol = mod(tokenIdx, 6.0);   // 0-5 (6 columns)
+  float tokenRow = floor(tokenIdx / 6.0); // 0-4 (5 rows)
+
+  // Grid spacing — spread across the scene
+  float colSpacing = 4.5;
+  float rowSpacing = 5.5;
+  float gridX = (tokenCol - 2.5) * colSpacing;  // center at 0
+  float gridY = (tokenRow - 2.0) * rowSpacing;  // center at 0
+  float gridZ = 0.0;
+
+  // Position within token block — tight sphere using aLatticeMix and aRandom
+  float withinToken = fract(aProgressIndex * numTokens);
+  float blockRadius = 0.9;
+  float blockX = aRandom.x * blockRadius;
+  float blockY = aRandom.y * blockRadius;
+  float blockZ = aRandom.z * blockRadius * 0.5; // flatter in Z for readability
+
+  // Attention flash: periodic wave sweeping left-to-right across the grid
+  // Each token lights up in sequence based on its column + row
+  float attentionSpeed = 0.4;
+  float attentionPhase = fract(uTime * attentionSpeed - tokenIdx / numTokens);
+  float isAttended = smoothstep(0.85, 1.0, attentionPhase);
+
+  // When attended: token block expands slightly (embedding vector unpacking)
+  float expansion = isAttended * 0.6;
+  float expandedBlockRadius = blockRadius * (1.0 + expansion);
+  blockX = aRandom.x * expandedBlockRadius;
+  blockY = aRandom.y * expandedBlockRadius;
+  blockZ = aRandom.z * expandedBlockRadius * 0.5;
+
+  // Discrete tick: subtle quantized pulsing (computational, not biological)
+  float tickRate = 3.0;
+  float tickPhase = fract(uTime * tickRate + tokenIdx * 0.1);
+  float tick = smoothstep(0.0, 0.1, tickPhase) * smoothstep(0.3, 0.2, tickPhase);
+  blockX += tick * aRandom.x * 0.15;
+  blockY += tick * aRandom.y * 0.15;
+
+  vec3 latticePos = vec3(
+    gridX + blockX,
+    gridY + blockY,
+    gridZ + blockZ
+  );
+
+  // NOTE: Do NOT set vWavePhase = isAttended here.
+  // Beat 3 (lines ~229-237) overwrites vWavePhase with interference value.
+  // The fragment shader will recompute isAttended from vProgressIndex + uTime directly.
 
   // Beat 3 — Maya: Lattice-based wave interference
   // 3 overlapping sine-wave systems with distinct directions/frequencies/speeds
