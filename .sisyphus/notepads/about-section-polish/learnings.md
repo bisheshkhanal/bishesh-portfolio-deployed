@@ -71,3 +71,29 @@
 - Added `isTransitioning` ref guard to `ScenePortal` so expand/collapse clicks are ignored while a CSS transition is in flight.
 - `handleExpand` and `handleCollapse` now set the guard before starting state changes, and `handleTransitionEnd` clears it when the portal element finishes transitioning.
 - This prevents the portal from getting stuck in mixed states during rapid click/tap sequences.
+
+## ScenePortal DNA Sidebar Hiding
+- Added `portal-open` class toggle to `document.body` in `ScenePortal.tsx` when `isOpen` changes.
+- Added CSS rule in `src/index.css` to set `visibility: hidden` on `[data-testid="dna-canvas"]`. This hides the DNA sidebar visually without unmounting it or causing layout reflows.
+
+## [2026-03-27] T6 Verification — Collapse Returns to Beat 1 (No-op)
+
+- Verified collapse flow in `ScenePortal`: `handleCollapse()` sets `setIsFullscreen(false)` and waits for portal transition end before `setIsOpen(false)`.
+- Confirmed `TopologyScene` is rendered with `previewMode={!isOpen}` in `ScenePortal`, so `previewMode` flips to `true` exactly when collapse completes (`isOpen=false`).
+- Confirmed `useTopologyScrollState(previewMode)` snaps state to `computeScrollState(0)` whenever `previewMode` is true; this yields beat-1 weights immediately on the next frame.
+- Result: Beat reset on return from fullscreen is already covered by T3; no additional code change required for T6.
+- Validation: `npx tsc --noEmit` exits successfully.
+
+## Mobile Responsiveness Fixes
+- Updated `ScenePortal.tsx` placeholder div height to `h-[300px] md:h-[450px]` to fit better on mobile screens.
+- Changed fullscreen portal height from `100vh` to `100dvh` to account for mobile browser chrome (address bar).
+- Added `min-h-[44px] min-w-[44px] flex items-center justify-center` to the Return button to ensure a proper touch target size (Apple HIG minimum).
+- Verified `AboutSection.tsx` text block layout at 375px; the `max-w-2xl` class handles mobile widths gracefully without horizontal overflow.
+
+## [2026-03-27] T8 About Section Polish E2E Coverage
+
+- Added `e2e/about-section-polish.spec.ts` with 8 `@desktop` tests covering vertical layout, no-subheader regression, pointer cursor, DNA hide/show during fullscreen, fullscreen expand/collapse, rapid-click stability, mobile 375px layout, and mobile expand behavior.
+- Reused the `gotoHomeAbout()` + `__DNA_E2E__` initialization pattern from `portal-dna-nav.spec.ts` so the spec runs against `/` and can assert on the DNA sidebar reliably.
+- The initial no-subheaders assertion failed because the text still exists in `Hero`; scoping those assertions to `#about-section` fixed the regression intent without changing app code.
+- Verified with `npm run build` and `npx playwright test e2e/about-section-polish.spec.ts --project=desktop`; final result was 8/8 passing.
+- Saved the Playwright run log to `.sisyphus/evidence/polish-task-T8-playwright-output.txt`.
