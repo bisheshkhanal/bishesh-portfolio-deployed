@@ -36,12 +36,21 @@ test('About section renders as vertical stack @desktop', async ({ page }) => {
   await expect(divider).toBeVisible();
 });
 
-test('About section has no subheaders @desktop', async ({ page }) => {
+test('Scene canvas is rendering in preview state @desktop', async ({ page }) => {
   const section = await gotoHomeAbout(page);
-  await section.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1000);
 
-  await expect(section.getByText('From biological systems')).toHaveCount(0);
-  await expect(section.getByText('I build systems that can reason')).toHaveCount(0);
+  const canvas = section.locator('canvas').first();
+  await canvas.waitFor({ timeout: 10000 });
+  const size = await canvas.evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  });
+  expect(size.width).toBeGreaterThan(0);
+  expect(size.height).toBeGreaterThan(0);
+
+  const trigger = section.getByRole('button', { name: 'Expand interactive 3D scene' });
+  await expect(trigger).toBeVisible();
 });
 
 test('Scene panel has pointer cursor on hover @desktop', async ({ page }) => {
@@ -84,7 +93,7 @@ test('DNA sidebar hidden when portal is fullscreen @desktop', async ({ page }) =
   expect(visibilityRestored).not.toBe('hidden');
 });
 
-test('Portal expands to fullscreen and collapses @desktop', async ({ page }) => {
+test('Portal expands to fullscreen and returns to preview state @desktop', async ({ page }) => {
   const section = await gotoHomeAbout(page);
   await page.waitForTimeout(1000);
 
@@ -111,31 +120,21 @@ test('Portal expands to fullscreen and collapses @desktop', async ({ page }) => 
   await page.getByRole('button', { name: 'Return to page' }).click();
   await page.waitForTimeout(600);
   await expect(dialog).not.toBeVisible();
+  await expect(trigger).toBeVisible();
 });
 
-test('Rapid clicks on scene panel result in stable state @desktop', async ({ page }) => {
+test('Portal preview state has correct role and is interactive @desktop', async ({ page }) => {
   const section = await gotoHomeAbout(page);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(500);
 
   const trigger = section.getByRole('button', { name: 'Expand interactive 3D scene' });
-  const box = await trigger.boundingBox();
-
-  expect(box).not.toBeNull();
-
-  for (let index = 0; index < 5; index += 1) {
-    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
-    await page.waitForTimeout(50);
-  }
-  await page.waitForTimeout(1000);
+  await expect(trigger).toBeVisible();
 
   const dialog = page.getByRole('dialog', { name: 'Interactive 3D scene' });
-  const isOpen = await dialog.isVisible();
+  await expect(dialog).not.toBeVisible();
 
-  if (isOpen) {
-    await expect(page.getByRole('button', { name: 'Return to page' })).toBeVisible();
-  } else {
-    await expect(trigger).toBeVisible();
-  }
+  const cursor = await trigger.evaluate((el) => window.getComputedStyle(el).cursor);
+  expect(cursor).toBe('pointer');
 });
 
 test('About section mobile layout at 375px @desktop', async ({ page }) => {

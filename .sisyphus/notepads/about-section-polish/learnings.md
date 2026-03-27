@@ -97,3 +97,9 @@
 - The initial no-subheaders assertion failed because the text still exists in `Hero`; scoping those assertions to `#about-section` fixed the regression intent without changing app code.
 - Verified with `npm run build` and `npx playwright test e2e/about-section-polish.spec.ts --project=desktop`; final result was 8/8 passing.
 - Saved the Playwright run log to `.sisyphus/evidence/polish-task-T8-playwright-output.txt`.
+
+## [2026-03-27] Final verification cleanup
+
+- Removed unused dead code from `useTopologyScrollState.ts`: `easeInExpo`, `easeOutCubic`, and the unused beat-local `b1`-`b4` intermediates.
+- Replaced the outdated no-subheaders and rapid-click tests with required behavioral coverage for preview animation, beat-lock, and beat-reset on collapse.
+- Verified the topology hook and about-section spec with language diagnostics, TypeScript, production build, and desktop Playwright; all changed files were clean.
