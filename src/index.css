@@ -56,6 +56,11 @@ code {
   visibility: hidden;
 }
 
+.portal-open [data-testid="dna-rail"],
+.portal-open [data-testid="dna-rail"] * {
+  pointer-events: none !important;
+}
+
 @layer utilities {
   .bg-diagonal-grid {
     background-image:

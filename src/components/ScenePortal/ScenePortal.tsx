@@ -174,7 +174,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
             aria-label="Return to page (or press Escape)"
             className="absolute top-6 flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-full text-sm text-[var(--gray)] transition-colors hover:bg-white/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--cyan)] focus-visible:outline-offset-2"
             style={{
-              right: 'calc(var(--sidebar-width) + 1.5rem)',
+              right: '1.5rem',
               zIndex: 10001,
               pointerEvents: 'auto',
               background: 'rgba(10,10,10,0.6)',

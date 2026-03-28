@@ -34,16 +34,15 @@ function BeatPanel({ beat, index }: { beat: typeof BEAT_CONFIGS[0]; index: numbe
     ref.current.style.opacity = String(opacity);
   });
 
-  const isEven = index % 2 === 0;
-
   return (
     <div
       ref={ref}
       style={{
         height: '100dvh',
+        width: '100vw',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: isEven ? 'flex-start' : 'flex-end',
+        justifyContent: 'flex-end',
         padding: '0 8vw',
         pointerEvents: 'none',
         opacity: 0,
@@ -102,7 +101,7 @@ function BeatPanel({ beat, index }: { beat: typeof BEAT_CONFIGS[0]; index: numbe
 export function TopologyOverlay() {
   return (
     <Scroll html>
-      <div style={{ width: '100%' }}>
+      <div style={{ width: '100vw' }}>
         {BEAT_CONFIGS.map((beat, i) => (
           <BeatPanel key={beat.label} beat={beat} index={i} />
         ))}
