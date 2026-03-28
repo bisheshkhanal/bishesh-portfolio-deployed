@@ -141,7 +141,7 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
     >
       <div
         ref={portalRef}
-        className={`overflow-hidden border border-[var(--border)] bg-[var(--bg-card)] flex items-center justify-center ${!isOpen ? 'cursor-pointer' : ''}`}
+        className={`overflow-hidden border border-[var(--border)] bg-[#111111] flex items-center justify-center ${!isOpen ? 'cursor-pointer' : ''}`}
         style={portalStyle}
         onClick={!isOpen ? handleExpand : undefined}
         onTransitionEnd={handleTransitionEnd}
@@ -156,21 +156,35 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
         aria-label={!isOpen ? "Expand interactive 3D scene" : "Interactive 3D scene"}
         aria-modal={isOpen ? true : undefined}
       >
+        {!isOpen && (
+          <div
+            className="absolute inset-0 z-10 cursor-pointer"
+            style={{ touchAction: 'none' }}
+            onClick={handleExpand}
+            onWheel={(e) => e.stopPropagation()}
+            aria-hidden="true"
+          />
+        )}
         {isOpen && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleCollapse();
             }}
-            aria-label="Return to page"
-            className="absolute top-6 px-4 py-2 min-h-[44px] min-w-[44px] text-sm text-[var(--gray)] border border-[var(--border)] bg-[var(--bg-black)] rounded-md flex items-center justify-center"
+            aria-label="Return to page (or press Escape)"
+            className="absolute top-6 flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-full text-sm text-[var(--gray)] transition-colors hover:bg-white/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--cyan)] focus-visible:outline-offset-2"
             style={{
               right: 'calc(var(--sidebar-width) + 1.5rem)',
               zIndex: 10001,
               pointerEvents: 'auto',
+              background: 'rgba(10,10,10,0.6)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            Return
+            <span>↩ return</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>· esc</span>
           </button>
         )}
         <SceneErrorBoundary
