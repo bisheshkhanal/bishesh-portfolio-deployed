@@ -65,7 +65,7 @@ function TopologyContent({ particleCount, previewMode }: TopologyContentProps) {
     <>
       <TopologyParticles scrollStateRef={scrollStateRef} particleCount={particleCount} />
       <TopologyEffects scrollStateRef={scrollStateRef} />
-      <TopologyOverlay />
+      {!previewMode && <TopologyOverlay />}
     </>
   );
 }
