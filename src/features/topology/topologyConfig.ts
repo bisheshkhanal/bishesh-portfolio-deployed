@@ -18,7 +18,7 @@ export const BEAT_CONFIGS: BeatConfig[] = [
     scrollStart: 0.25,
     scrollEnd: 0.50,
     label: 'Computation',
-    copy: 'In agentic engineering, tokens are the DNA of language models. They don\'t create semantic meaning from nothing. They flow through dual processing lanes, passing through staged gates where raw potential transforms into structured output.',
+    copy: 'Bits are the fundamental DNA of computation—binary sequences encoding infinite potential. In agentic systems, these bits abstract into tokens, the DNA of language models. They flow through dual processing lanes, passing through staged gates where raw potential transforms into structured output.',
   },
   {
     scrollStart: 0.50,
