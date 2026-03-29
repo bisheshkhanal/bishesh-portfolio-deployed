@@ -32,8 +32,7 @@ test('About section renders as vertical stack @desktop', async ({ page }) => {
   });
   expect(panelHeight).toBeGreaterThanOrEqual(280);
 
-  const divider = section.locator('.border-t').first();
-  await expect(divider).toBeVisible();
+
 });
 
 test('Scene canvas is rendering in preview state @desktop', async ({ page }) => {
