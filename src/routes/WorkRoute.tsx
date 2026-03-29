@@ -1,12 +1,20 @@
+import Skills from '../components/Skills';
+import Projects from '../components/Projects';
+import { projects } from '../data/projectsData';
+
+const experimentProjects = projects.filter(p => p.isExperiment);
+
 export default function WorkRoute() {
   return (
-    <section className="w-full py-24 lg:py-32">
-      <p className="mb-4 text-xs uppercase tracking-[0.4em] text-white/45">Flagship Work</p>
-      <h1 className="text-5xl font-normal tracking-tight text-white">Selected Work</h1>
-      <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/65">
-        Flagship case studies will land here as the overhaul replaces the current project grid with
-        deeper editorial pages.
-      </p>
-    </section>
+    <>
+      <Skills />
+      <Projects />
+      {experimentProjects.length > 0 && (
+        <section id="experiments" className="w-full py-24 lg:py-32">
+          <h2 className="text-[48px] font-normal mb-12 tracking-tight">Experiments</h2>
+          {/* Experiment projects would render here when isExperiment projects exist */}
+        </section>
+      )}
+    </>
   );
 }
