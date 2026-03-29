@@ -1,17 +1,15 @@
-import { BrowserRouter, NavLink, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes } from 'react-router-dom';
 import DNAHelix from '../components/DNAHelix/DNAHelix';
 import { MainLayout } from '../layouts/MainLayout';
 import { ImmersiveLayout } from '../layouts/ImmersiveLayout';
 import HomeRoute from '../routes/HomeRoute';
 import WorkRoute from '../routes/WorkRoute';
-import ExperimentsRoute from '../routes/ExperimentsRoute';
 import AboutRoute from '../routes/AboutRoute';
 import WritingRoute from '../routes/WritingRoute';
 
 const shellLinks: ReadonlyArray<{ to: string; label: string; end?: boolean }> = [
   { to: '/', label: 'Home', end: true },
   { to: '/work', label: 'Work' },
-  { to: '/experiments', label: 'Experiments' },
   { to: '/writing', label: 'Writing' },
 ];
 
@@ -52,7 +50,7 @@ export default function App() {
         <Route element={<ShellLayout />}>
           <Route index element={<HomeRoute />} />
           <Route path="work" element={<WorkRoute />} />
-          <Route path="experiments" element={<ExperimentsRoute />} />
+          <Route path="experiments" element={<Navigate to="/work" replace />} />
           <Route path="writing" element={<WritingRoute />} />
         </Route>
         <Route element={<ImmersiveLayout><Outlet /></ImmersiveLayout>}>
