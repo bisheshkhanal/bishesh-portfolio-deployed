@@ -5,18 +5,18 @@ export const skillsData = [
       { id: 'python', name: 'Python', iconKey: 'python' },
       { id: 'java', name: 'Java', iconKey: 'java' },
       { id: 'javascript', name: 'JavaScript', iconKey: 'javascript' },
+      { id: 'typescript', name: 'TypeScript', iconKey: 'typescript' },
       { id: 'react', name: 'React', iconKey: 'react' },
       { id: 'node', name: 'Node.js', iconKey: 'node' },
       { id: 'django', name: 'Django', iconKey: 'django' },
     ],
   },
   {
-    label: "Frontend Tools",
+    label: "AI & Creative Tech",
     skills: [
-      { id: 'html', name: 'HTML5', iconKey: 'html5' },
-      { id: 'css', name: 'CSS3', iconKey: 'css3' },
-      { id: 'tailwind', name: 'Tailwind CSS', iconKey: 'tailwind' },
-      { id: 'react2', name: 'React', iconKey: 'react' },
+      { id: 'threejs', name: 'Three.js', iconKey: 'threejs' },
+      { id: 'r3f', name: 'React Three Fiber', iconKey: 'r3f' },
+      { id: 'webgl', name: 'WebGL', iconKey: 'webgl' },
     ],
   },
   {

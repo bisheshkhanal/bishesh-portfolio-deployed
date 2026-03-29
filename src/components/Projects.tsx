@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import projects from '../data/projectsData';
-import { projectDetails } from '../data/projectDetailsData';
+import { projects } from '../data/projectsData';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 // Tech badge color-coding per design spec
@@ -80,7 +79,7 @@ export default function Projects() {
         variants={containerVariants}
       >
         {projects.map((p) => {
-          const detail: any = (projectDetails as any)[p.id];
+          const detail = p.details;
           const isOpen = expanded === p.id;
           
           return (
