@@ -1,4 +1,5 @@
 import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useMotionValue, useSpring } from 'framer-motion';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
@@ -42,9 +43,14 @@ const clamp = (value: number, min: number, max: number): number =>
 
 export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
   // Observe DOM elements: 'about-section' instead of Hero's legacy 'about'
   // Map back to logical marker id for helix highlighting
-  const sectionIds = useMemo(() => ['hero', 'projects', 'skills', 'about-section'], []);
+  const sectionIds = useMemo(
+    () => isHome ? ['hero', 'experience', 'projects', 'about-section'] : [],
+    [isHome]
+  );
   const activeSection = useActiveSection(sectionIds);
 
   // Map 'about-section' DOM id back to logical marker id 'about'
