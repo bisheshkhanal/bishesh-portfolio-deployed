@@ -46,15 +46,17 @@ export default function ExperienceSection() {
         className="text-[48px] font-normal mb-12 tracking-tight"
         variants={headingVariants}
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        animate="visible"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.25 }}
       >
         Experience
       </motion.h2>
 
       <motion.div
         className="flex flex-col gap-8"
-        initial="hidden"
-        animate="visible"
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.25 }}
         variants={containerVariants}
       >
         {experienceData.map((entry) => (

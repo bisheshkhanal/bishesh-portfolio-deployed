@@ -1,6 +1,7 @@
 export const bio = {
   name: "Bishesh Khanal",
   tagline: "I build agentic workflows, modern AI infrastructure, and explore the intersection of software and biology.",
+  // NOTE: Not currently consumed by any active component. Available for future use.
   greeting: "Hey, I'm Bishesh.",
   subheaders: [
     "From biological systems to digital architecture",

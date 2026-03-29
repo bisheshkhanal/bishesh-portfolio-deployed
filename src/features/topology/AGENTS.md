@@ -1,13 +1,17 @@
 # TOPOLOGY MODULE KNOWLEDGE BASE
 
 ## OVERVIEW
-`src/features/topology/` is a self-contained R3F feature for the immersive About experience: shader-driven particles, scroll-controlled narrative beats, camera choreography, and post-processing.
+`src/features/topology/` is a self-contained R3F feature for the About experience: shader-driven particles, scroll-controlled narrative beats, camera choreography, post-processing, and quality-gated entry with a reduced-motion fallback.
 
 ## WHERE TO LOOK
 | Task | Location | Notes |
 |------|----------|-------|
+| Quality-gated entry | `AboutExperience.tsx` | Routes to `TopologyScene` or `ReducedMotionTopology` based on device tier + motion preference |
+| Reduced-motion fallback | `ReducedMotionTopology.tsx` | Static scrollable beat panels; no WebGL |
+| Device tier + motion detection | `useTopologyQuality.ts` | Hardware concurrency / device memory → tier; `matchMedia` → reduced motion gate |
 | Scene entry | `TopologyScene.tsx` | Owns `Canvas`, `ScrollControls`, particle count, and orchestration |
 | Scroll state machine | `useTopologyScrollState.ts` | Computes normalized beat weights and derived visual values |
+| Shared state types | `topologyTypes.ts` | `TopologyScrollState`, `BeatConfig`, `BeatColors`; high-fan-in type module |
 | Shader material / uniforms | `TopologyMaterial.tsx`, `shaderUniforms.ts` | Mutate uniforms through refs in `useFrame` |
 | Narrative copy + geometry constants | `topologyConfig.ts` | Beat copy plus helix constants duplicated in shader logic |
 | Particle generation | `particleData.ts` | Deterministic buffer generation across quality tiers |
@@ -20,6 +24,7 @@
 - Particle geometry is built once from generated buffers and reused; performance assumptions depend on that memoization.
 - `uBeatWeights` must remain normalized so the shader blends cleanly between helix, lattice, chaos, and plane states.
 - `TopologyScene` intentionally uses `gl={{ antialias: false }}` and `frustumCulled={false}` for performance / visibility tradeoffs already chosen in this repo.
+- `AboutExperience` is the public entry point, not `TopologyScene` directly — it handles quality gating and reduced-motion routing.
 
 ## ANTI-PATTERNS
 - Do not replace deterministic particle generation with `Math.random()`; tier changes need stable shapes.
@@ -32,4 +37,5 @@
 ## NOTES
 - `ScrollControls` uses `pages={4}` and `damping={0.1}`; that pacing shapes the whole narrative.
 - `noiseAmplitude`, bloom, and chromatic aberration are all derived from the same beat weights; treat them as one visual system.
-- Start with `TopologyScene.tsx` + `useTopologyScrollState.ts` before diving into GLSL.
+- Start with `AboutExperience.tsx` → `TopologyScene.tsx` + `useTopologyScrollState.ts` before diving into GLSL.
+- `useTopologyQuality` uses `navigator.hardwareConcurrency` and `navigator.deviceMemory` as device tier proxies; tiers map to particle counts defined in `particleData.ts`.

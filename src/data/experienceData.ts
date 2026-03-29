@@ -9,6 +9,14 @@ export type ExperienceEntry = {
 
 export const experienceData: ExperienceEntry[] = [
   {
+    id: 'upzoids',
+    type: 'work',
+    organization: 'Upzoids Ltd.',
+    role: 'Power Platform Developer (COOP)',
+    period: '2024 — Present',
+    description: 'Co-op placement building Power Platform solutions for enterprise clients.',
+  },
+  {
     id: 'ucalgary',
     type: 'education',
     organization: 'University of Calgary',

@@ -1,6 +1,5 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Helix } from './Helix';
-import { DNAMarkerId } from '../../hooks/useDNAMarkerAnchors';
 import { Suspense, CSSProperties, useCallback, useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -9,7 +8,7 @@ interface SceneProps {
   onNavigate?: (sectionId: string) => void;
   activeSection?: string;
   isE2E?: boolean;
-  markerTs: Record<DNAMarkerId, number>;
+  markerTs: Record<string, number>;
   className?: string;
   style?: CSSProperties;
 }
@@ -126,12 +125,8 @@ function CameraManager({ helixScale }: { helixScale: number }) {
       debug.canvasPx = Math.round(canvasWidth);
       debug.aspect = parseFloat(aspect.toFixed(3));
       debug.isNarrow = isNarrowRef.current;
-      if (!debug.markers || !debug.markers.projects || !debug.markers.skills) {
-        debug.markers = {
-          hero: { x: 0, y: 0, visible: false },
-          projects: { x: 0, y: 0, visible: false },
-          skills: { x: 0, y: 0, visible: false }
-        };
+      if (!debug.markers || Object.keys(debug.markers).length === 0) {
+        debug.markers = {};
       }
     }
   }, [camera, helixScale, size, viewport]);

@@ -5,6 +5,13 @@ import { useActiveSection } from '../../hooks/useActiveSection';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { useDNAMarkerAnchors } from '../../hooks/useDNAMarkerAnchors';
 import { Scene } from './Scene';
+import {
+  DNA_ROUTE_CONFIG,
+  FALLBACK_ROUTE_CONFIG,
+  SECTION_COLORS,
+} from './dnaRouteConfig';
+import type { DNARouteConfig } from './dnaRouteConfig';
+import { projects } from '../../data/projectsData';
 
 declare global {
   interface Window {
@@ -44,21 +51,33 @@ const clamp = (value: number, min: number, max: number): number =>
 export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const location = useLocation();
-  const isHome = location.pathname === '/';
-  // Observe DOM elements: 'about-section' instead of Hero's legacy 'about'
-  // Map back to logical marker id for helix highlighting
-  const sectionIds = useMemo(
-    () => isHome ? ['hero', 'experience', 'projects', 'about-section'] : [],
-    [isHome]
-  );
-  const activeSection = useActiveSection(sectionIds);
 
-  // Map 'about-section' DOM id back to logical marker id 'about'
-  const helixActiveSection = useMemo(() => {
-    return activeSection === 'about-section' ? 'about' : activeSection;
-  }, [activeSection]);
+  const routeConfig: DNARouteConfig = useMemo(() => {
+    const base = DNA_ROUTE_CONFIG[location.pathname] ?? FALLBACK_ROUTE_CONFIG;
 
-  const { markerTs } = useDNAMarkerAnchors();
+    if (location.pathname !== '/work') return base;
+
+    const experimentProjects = projects.filter(p => p.isExperiment);
+    if (experimentProjects.length === 0) return base;
+
+    return {
+      ...base,
+      sectionIds: [...base.sectionIds, 'experiments'],
+      sections: [
+        ...base.sections,
+        {
+          id: 'experiments',
+          selector: '#experiments h2',
+          color: SECTION_COLORS.experiments,
+          label: 'Experiments',
+        },
+      ],
+    };
+  }, [location.pathname]);
+
+  const activeSection = useActiveSection(routeConfig.sectionIds);
+
+  const { markerTs } = useDNAMarkerAnchors(routeConfig);
   const isE2E = typeof window !== 'undefined' && window.__DNA_E2E__ === true;
   
   const rawScrollProgress = useMotionValue(0);
@@ -128,22 +147,21 @@ export default function DNAHelix() {
 
   useEffect(() => {
     if ((import.meta.env.DEV || isE2E) && window.__DNA_DEBUG__) {
-      window.__DNA_DEBUG__.activeSection = helixActiveSection;
+      window.__DNA_DEBUG__.activeSection = activeSection;
     }
-  }, [helixActiveSection, isE2E]);
+  }, [activeSection, isE2E]);
 
   const handleNavigate = useCallback((id: string) => {
-    if (id === 'hero') {
+    const firstSection = routeConfig.sectionIds[0];
+    if (id === firstSection) {
       window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
       return;
     }
-    // Map helix 'about' marker to the actual DOM element id='about-section'
-    const targetId = id === 'about' ? 'about-section' : id;
-    const el = document.getElementById(targetId);
+    const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, routeConfig.sectionIds]);
 
   useEffect(() => {
     if (!(import.meta.env.DEV || isE2E)) return;
@@ -169,7 +187,7 @@ export default function DNAHelix() {
         <Scene
             scrollProgress={smoothProgress}
             onNavigate={handleNavigate}
-            activeSection={helixActiveSection}
+            activeSection={activeSection}
             isE2E={isE2E}
             markerTs={markerTs}
             className="w-full h-full"

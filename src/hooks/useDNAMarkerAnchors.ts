@@ -1,25 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-
-export type DNAMarkerId = 'hero' | 'projects' | 'skills' | 'about';
+import type { DNARouteConfig } from '../components/DNAHelix/dnaRouteConfig';
 
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
 
-type MarkerTs = Record<DNAMarkerId, number>;
-type MarkerYs = Record<DNAMarkerId, number>;
-
-const DEFAULT_MARKER_TS: MarkerTs = {
-  hero: 0,
-  projects: 0.4,
-  skills: 0.75,
-  about: 0.9
-};
-
-const DEFAULT_VIEWPORT_YS: MarkerYs = {
-  hero: 0,
-  about: 0,
-  projects: 0,
-  skills: 0
-};
+type MarkerMap = Record<string, number>;
 
 const getAnchorY = (element: HTMLElement | null) => {
   if (!element) return null;
@@ -27,57 +11,66 @@ const getAnchorY = (element: HTMLElement | null) => {
   return window.scrollY + rect.top + rect.height / 2;
 };
 
-export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerYs } {
-  const [markerTs, setMarkerTs] = useState<MarkerTs>(DEFAULT_MARKER_TS);
-  const [viewportYs, setViewportYs] = useState<MarkerYs>(DEFAULT_VIEWPORT_YS);
+function buildDefaults(config: DNARouteConfig): { defaultTs: MarkerMap; defaultYs: MarkerMap } {
+  const defaultTs: MarkerMap = {};
+  const defaultYs: MarkerMap = {};
+  const count = config.sections.length;
+  config.sections.forEach((section, i) => {
+    defaultTs[section.id] = count > 1 ? i / (count - 1) : 0;
+    defaultYs[section.id] = 0;
+  });
+  return { defaultTs, defaultYs };
+}
+
+export function useDNAMarkerAnchors(config: DNARouteConfig): { markerTs: MarkerMap; viewportYs: MarkerMap } {
+  const { defaultTs, defaultYs } = buildDefaults(config);
+  const [markerTs, setMarkerTs] = useState<MarkerMap>(defaultTs);
+  const [viewportYs, setViewportYs] = useState<MarkerMap>(defaultYs);
   const measureRafRef = useRef<number | null>(null);
   const scrollRafRef = useRef<number | null>(null);
-  const anchorYsRef = useRef<MarkerYs | null>(null);
+  const anchorYsRef = useRef<MarkerMap | null>(null);
 
   const measure = useCallback(() => {
-    const heroHeading = document.querySelector('#hero h1') as HTMLElement | null;
-    const projectsHeading = document.querySelector('#projects h2') as HTMLElement | null;
-    const skillsHeading = document.querySelector('#skills h2') as HTMLElement | null;
-    const aboutSection = document.getElementById('about-section');
-    const contactSection = document.getElementById('contact');
+    const sectionAnchors: MarkerMap = {};
+    const anchors: MarkerMap = {};
+    let scrollStartY = 0;
 
-    if (!heroHeading || !projectsHeading || !skillsHeading || !aboutSection || !contactSection) return;
+    for (let i = 0; i < config.sections.length; i++) {
+      const section = config.sections[i];
+      const el = document.querySelector(section.selector) as HTMLElement | null;
+      const anchorY = getAnchorY(el);
+      if (anchorY === null) return;
+      sectionAnchors[section.id] = anchorY;
+      anchors[section.id] = anchorY;
+      if (i === 0) scrollStartY = anchorY;
+    }
 
-    const heroAnchorY = getAnchorY(heroHeading);
-    const projectsAnchorY = getAnchorY(projectsHeading);
-    const skillsAnchorY = getAnchorY(skillsHeading);
-    const aboutAnchorY = getAnchorY(aboutSection);
-    const contactRect = contactSection.getBoundingClientRect();
-    const contactBottomY = window.scrollY + contactRect.bottom;
+    let scrollEndY: number;
+    if (config.scrollBoundarySelector) {
+      const boundaryEl = document.querySelector(config.scrollBoundarySelector) as HTMLElement | null;
+      if (!boundaryEl) return;
+      const boundaryRect = boundaryEl.getBoundingClientRect();
+      scrollEndY = window.scrollY + boundaryRect.bottom - window.innerHeight;
+    } else {
+      scrollEndY = document.documentElement.scrollHeight - window.innerHeight;
+    }
 
-    if (heroAnchorY === null || projectsAnchorY === null || skillsAnchorY === null || aboutAnchorY === null) return;
-
-    const scrollStartY = heroAnchorY;
-    const scrollEndY = contactBottomY - window.innerHeight;
     const range = Math.max(1, scrollEndY - scrollStartY);
+    const nextMarkerTs: MarkerMap = {};
+    for (const section of config.sections) {
+      nextMarkerTs[section.id] = clamp01((sectionAnchors[section.id] - scrollStartY) / range);
+    }
 
-    const nextMarkerTs: MarkerTs = {
-      hero: clamp01((heroAnchorY - scrollStartY) / range),
-      about: clamp01((aboutAnchorY - scrollStartY) / range),
-      projects: clamp01((projectsAnchorY - scrollStartY) / range),
-      skills: clamp01((skillsAnchorY - scrollStartY) / range)
-    };
-
-    anchorYsRef.current = {
-      hero: heroAnchorY,
-      about: aboutAnchorY,
-      projects: projectsAnchorY,
-      skills: skillsAnchorY
-    };
-
+    anchorYsRef.current = anchors;
     setMarkerTs(nextMarkerTs);
-    setViewportYs({
-      hero: heroAnchorY - window.scrollY,
-      about: aboutAnchorY - window.scrollY,
-      projects: projectsAnchorY - window.scrollY,
-      skills: skillsAnchorY - window.scrollY
-    });
-  }, []);
+
+    const currentScrollY = window.scrollY;
+    const nextViewportYs: MarkerMap = {};
+    for (const section of config.sections) {
+      nextViewportYs[section.id] = anchors[section.id] - currentScrollY;
+    }
+    setViewportYs(nextViewportYs);
+  }, [config]);
 
   const scheduleMeasure = useCallback(() => {
     if (measureRafRef.current !== null) return;
@@ -88,6 +81,11 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
   }, [measure]);
 
   useLayoutEffect(() => {
+    const { defaultTs: freshDefaults, defaultYs: freshYs } = buildDefaults(config);
+    setMarkerTs(freshDefaults);
+    setViewportYs(freshYs);
+    anchorYsRef.current = null;
+
     scheduleMeasure();
 
     const resizeObserver = new ResizeObserver(() => scheduleMeasure());
@@ -107,7 +105,7 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
         cancelAnimationFrame(measureRafRef.current);
       }
     };
-  }, [scheduleMeasure]);
+  }, [config, scheduleMeasure]);
 
   const scheduleViewportUpdate = useCallback(() => {
     if (scrollRafRef.current !== null) return;
@@ -116,12 +114,11 @@ export function useDNAMarkerAnchors(): { markerTs: MarkerTs; viewportYs: MarkerY
       const anchors = anchorYsRef.current;
       if (!anchors) return;
       const scrollY = window.scrollY;
-      setViewportYs({
-        hero: anchors.hero - scrollY,
-        about: anchors.about - scrollY,
-        projects: anchors.projects - scrollY,
-        skills: anchors.skills - scrollY
-      });
+      const nextYs: MarkerMap = {};
+      for (const key of Object.keys(anchors)) {
+        nextYs[key] = anchors[key] - scrollY;
+      }
+      setViewportYs(nextYs);
     });
   }, []);
 

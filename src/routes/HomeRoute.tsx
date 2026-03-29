@@ -1,16 +1,18 @@
 import Hero from '../components/Hero';
-import ExperienceSection from '../components/ExperienceSection/ExperienceSection';
 import Projects from '../components/Projects';
-import AboutSection from '../components/AboutSection/AboutSection';
+import Skills from '../components/Skills';
+import ExperienceSection from '../components/ExperienceSection/ExperienceSection';
+import TopologySection from '../components/TopologySection/TopologySection';
 import Contact from '../components/Contact';
 
 export default function HomeRoute() {
   return (
     <>
       <Hero />
-      <ExperienceSection />
       <Projects featured />
-      <AboutSection />
+      <Skills />
+      <ExperienceSection />
+      <TopologySection />
       <Contact />
     </>
   );

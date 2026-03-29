@@ -8,17 +8,17 @@ async function enableDNAE2E(page: Page) {
   });
 }
 
-async function gotoAboutSection(page: Page) {
+async function gotoTopologySection(page: Page) {
   await enableDNAE2E(page);
   await page.goto('/');
   await page.waitForLoadState('networkidle');
 
-  const aboutSection = page.locator('#about-section');
-  await aboutSection.scrollIntoViewIfNeeded();
-  await expect(aboutSection.getByRole('heading', { name: 'About' })).toBeVisible();
+  const topologySection = page.locator('#topology');
+  await topologySection.scrollIntoViewIfNeeded();
+  await expect(topologySection).toBeVisible();
   await page.waitForTimeout(1500);
 
-  return aboutSection;
+  return topologySection;
 }
 
 function portalTrigger(scope: Locator) {
@@ -40,28 +40,27 @@ async function dnaVisibility(page: Page) {
 }
 
 test('Scenario 1: layout vertical stack @desktop', async ({ page }) => {
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
-  const textBlock = aboutSection.locator('.max-w-2xl').first();
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
-  await expect(textBlock).toBeVisible();
-
-  const [textBox, triggerBox] = await Promise.all([
-    textBlock.boundingBox(),
+  const [sectionBox, triggerBox] = await Promise.all([
+    topologySection.boundingBox(),
     trigger.boundingBox(),
   ]);
 
-  expect(textBox).not.toBeNull();
+  expect(sectionBox).not.toBeNull();
   expect(triggerBox).not.toBeNull();
+  expect(topologySection).toBeVisible();
+  expect(sectionBox!.height).toBeGreaterThanOrEqual(triggerBox!.height);
   expect(triggerBox!.height).toBeGreaterThanOrEqual(280);
-  expect(triggerBox!.y).toBeGreaterThan(textBox!.y + textBox!.height - 4);
+  expect(triggerBox!.y).toBeGreaterThanOrEqual(sectionBox!.y);
 
   await page.screenshot({ path: `${evidenceDir}/layout.png`, fullPage: true });
 });
 
 test('Scenario 2: DNA sidebar hidden when portal is fullscreen @desktop', async ({ page }) => {
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
   expect(await dnaVisibility(page)).not.toBe('hidden');
   await trigger.click();
@@ -78,8 +77,8 @@ test('Scenario 2: DNA sidebar hidden when portal is fullscreen @desktop', async 
 });
 
 test('Scenario 3: portal expand and collapse @desktop', async ({ page }) => {
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
   await trigger.click();
   await page.waitForTimeout(600);
@@ -109,8 +108,8 @@ test('Scenario 3: portal expand and collapse @desktop', async ({ page }) => {
 });
 
 test('Scenario 4: cursor pointer on hover @desktop', async ({ page }) => {
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
   await trigger.hover();
   const cursor = await trigger.evaluate((element) => window.getComputedStyle(element).cursor);
@@ -119,8 +118,8 @@ test('Scenario 4: cursor pointer on hover @desktop', async ({ page }) => {
 
 test('Scenario 5: mobile layout at 375px @desktop', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
   const [panelHeight, overflowState] = await Promise.all([
     trigger.evaluate((element) => element.getBoundingClientRect().height),
@@ -138,8 +137,8 @@ test('Scenario 5: mobile layout at 375px @desktop', async ({ page }) => {
 });
 
 test('Scenario 6: cross-task integration @desktop', async ({ page }) => {
-  const aboutSection = await gotoAboutSection(page);
-  const trigger = portalTrigger(aboutSection);
+  const topologySection = await gotoTopologySection(page);
+  const trigger = portalTrigger(topologySection);
 
   const previewHeight = await trigger.evaluate((element) => element.getBoundingClientRect().height);
   expect(previewHeight).toBeGreaterThanOrEqual(280);

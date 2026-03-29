@@ -33,7 +33,8 @@ export default function Contact() {
          className="text-[48px] font-normal leading-tight mb-8 tracking-tight"
          variants={headingVariants}
          initial={prefersReducedMotion ? "visible" : "hidden"}
-         animate="visible"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.25 }}
        >
          Contact
        </motion.h2>

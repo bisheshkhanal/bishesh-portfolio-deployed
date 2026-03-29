@@ -1,6 +1,6 @@
 export default function WritingRoute() {
   return (
-    <section className="w-full py-24 lg:py-32">
+    <section id="writing" className="w-full py-24 lg:py-32">
       <p className="mb-4 text-xs uppercase tracking-[0.4em] text-white/45">Digital Garden</p>
       <h1 className="text-5xl font-normal tracking-tight text-white">Writing & Logs</h1>
       <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/65">

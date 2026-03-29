@@ -72,15 +72,17 @@ export default function Projects({ featured = false }: ProjectsProps) {
          className="text-[48px] font-normal mb-12 tracking-tight"
          variants={headingVariants}
          initial={prefersReducedMotion ? "visible" : "hidden"}
-         animate="visible"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.25 }}
        >
          Projects
        </motion.h2>
 
       <motion.div
         className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-        initial="hidden"
-        animate="visible"
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.25 }}
         variants={containerVariants}
       >
         {displayProjects.map((p) => {

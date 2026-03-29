@@ -81,7 +81,8 @@ export default function Skills() {
           className="text-[48px] font-normal mb-12 tracking-tight"
           variants={headingVariants}
           initial={prefersReducedMotion ? "visible" : "hidden"}
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
         >
           Skills
         </motion.h2>
@@ -97,8 +98,9 @@ export default function Skills() {
 
                 <motion.div
                   className="grid grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-10"
-                  initial="hidden"
-                  animate="visible"
+                  initial={prefersReducedMotion ? "visible" : "hidden"}
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.25 }}
                   variants={containerVariants}
                 >
                   {group.skills.map((skill) => {

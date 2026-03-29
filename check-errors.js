@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
     console.log('PAGE ERROR:', err.message);
   });
 
-  await page.goto('http://localhost:5174/about');
+  await page.goto('http://localhost:4173/');
   await page.waitForTimeout(3000);
   
   await browser.close();
