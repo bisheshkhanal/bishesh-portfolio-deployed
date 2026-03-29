@@ -119,7 +119,7 @@ function CameraManager({ helixScale }: { helixScale: number }) {
       lastUpdateRef.current = performance.now();
     }
 
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any).__DNA_DEBUG__) {
       const debug = (window as any).__DNA_DEBUG__;
       debug.cameraFov = currentFovRef.current;
       debug.cameraZ = currentZRef.current;
@@ -180,7 +180,7 @@ export function Scene({ scrollProgress, onNavigate, activeSection, isE2E, marker
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => {
-          if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
+          if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any).__DNA_DEBUG__) {
             const debug = (window as any).__DNA_DEBUG__;
             debug.pointerMissedCount = (debug.pointerMissedCount ?? 0) + 1;
           }

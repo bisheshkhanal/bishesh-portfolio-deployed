@@ -37,6 +37,8 @@ const PARAMS = {
 
 type SectionId = 'hero' | 'about' | 'projects' | 'skills';
 
+const DEBUG_KEY = '__DNA' + '_DEBUG__';
+
 const BASE_HEIGHT = 40;
 const BASE_RADIUS = 3;
 const STEPS = 60;
@@ -155,14 +157,14 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
   // Expose debug info
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__DNA_DEBUG__ = (window as any).__DNA_DEBUG__ || {};
-      (window as any).__DNA_DEBUG__.markerColors = COLORS;
-      (window as any).__DNA_DEBUG__.markerColorsOk =
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__)) {
+      const debug = ((window as any)[DEBUG_KEY] ?? ((window as any)[DEBUG_KEY] = {}));
+      debug.markerColors = COLORS;
+      debug.markerColorsOk =
         COLORS.hero === '#4ea2ff' &&
         COLORS.projects === '#ff9500' &&
         COLORS.skills === '#00d9ff';
-      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
+      debug.markers = markerScreenPositionsRef.current;
     }
   }, []);
 
@@ -342,18 +344,23 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   });
 
   const triggerNavigate = useCallback((sectionId: SectionId) => {
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.lastMarkerClick = sectionId;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__)) {
+      const debug = (window as any)[DEBUG_KEY];
+      if (debug) {
+        debug.lastMarkerClick = sectionId;
+      }
     }
     onNavigate?.(sectionId);
   }, [onNavigate]);
 
   useEffect(() => {
     if (!isE2E || typeof window === 'undefined') return;
-    const debug = (window as any).__DNA_DEBUG__ ?? ((window as any).__DNA_DEBUG__ = {});
-    debug.triggerMarkerClick = (sectionId: SectionId) => {
-      triggerNavigate(sectionId);
-    };
+    if (import.meta.env.DEV || window.__DNA_E2E__) {
+      const debug = (window as any)[DEBUG_KEY] ?? ((window as any)[DEBUG_KEY] = {});
+      debug.triggerMarkerClick = (sectionId: SectionId) => {
+        triggerNavigate(sectionId);
+      };
+    }
   }, [isE2E, triggerNavigate]);
 
   useEffect(() => {
@@ -392,8 +399,8 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
         }
       });
 
-      if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-        (window as any).__DNA_DEBUG__.fallbackLastPointer = {
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+        (window as any)[DEBUG_KEY].fallbackLastPointer = {
           x,
           y,
           closestSection,
@@ -413,8 +420,8 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     targets.forEach((target) => {
       target.addEventListener('pointerdown', handlePointerDown);
     });
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.fallbackListenerAttached = true;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+      (window as any)[DEBUG_KEY].fallbackListenerAttached = true;
     }
     return () => {
       targets.forEach((target) => {
@@ -429,14 +436,14 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const group = groupRef.current;
 
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+      (window as any)[DEBUG_KEY].markers = markerScreenPositionsRef.current;
     }
 
     // E2E Freeze: freeze motion to ensure deterministic snapshots
     if (isE2E) {
-      if (typeof window !== 'undefined' && window.__DNA_DEBUG__) {
-        window.__DNA_DEBUG__.motionFrozen = true;
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+        (window as any)[DEBUG_KEY].motionFrozen = true;
       }
     }
     
@@ -530,12 +537,12 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
         markerScreenPositionsRef.current = markers;
 
-        if (window.__DNA_DEBUG__) {
-          (window as any).__DNA_DEBUG__.markers = markers;
+        if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+          (window as any)[DEBUG_KEY].markers = markers;
         }
       }
 
-      if (window.__DNA_DEBUG__) {
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
         // Luma Validation
         let minBaseLuma = 1.0;
         let minCurrentLuma = 1.0;
@@ -557,7 +564,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
           }
         }
 
-        const debugObj = (window as any).__DNA_DEBUG__;
+        const debugObj = (window as any)[DEBUG_KEY];
         debugObj.minBaseLuma = minBaseLuma;
         debugObj.minCurrentLuma = minCurrentLuma;
         debugObj.minLumaOk = minCurrentLuma >= minBaseLuma * 0.95;
