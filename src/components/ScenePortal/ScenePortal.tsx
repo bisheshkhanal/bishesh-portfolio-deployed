@@ -201,6 +201,11 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
           />
         </SceneErrorBoundary>
       </div>
+      {!isOpen && (
+        <p className="mt-3 text-xs text-white/35 tracking-[0.2em] uppercase text-center select-none pointer-events-none">
+          click to expand
+        </p>
+      )}
     </div>
   );
 }

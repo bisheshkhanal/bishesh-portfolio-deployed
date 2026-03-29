@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { projects } from '../data/projectsData';
+import { projects, type Project } from '../data/projectsData';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 // Tech badge color-coding per design spec
@@ -16,9 +16,14 @@ const getBadgeColor = (tech: string) => {
   return 'bg-white/10 text-white/70';
 };
 
-export default function Projects() {
+interface ProjectsProps {
+  featured?: boolean;
+}
+
+export default function Projects({ featured = false }: ProjectsProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const displayProjects: Project[] = featured ? projects.filter((p) => p.featured) : projects;
 
   const toggle = (id: string) => {
     setExpanded((prev) => (prev === id ? null : id));
@@ -78,7 +83,7 @@ export default function Projects() {
         animate="visible"
         variants={containerVariants}
       >
-        {projects.map((p) => {
+        {displayProjects.map((p) => {
           const detail = p.details;
           const isOpen = expanded === p.id;
           
@@ -143,7 +148,7 @@ export default function Projects() {
                                   <>
                                     <h4 className="text-white/80 uppercase tracking-widest text-sm mb-4">Key Features</h4>
                                     <ul className="space-y-3">
-                                        {detail.features.map((f: any, idx: number) => (
+                                        {detail.features.map((f, idx) => (
                                         <li key={idx} className="flex items-start gap-3 text-[var(--gray)]">
                                             <span className="text-[var(--cyan)] mt-1.5 text-[10px]">●</span>
                                             <span>

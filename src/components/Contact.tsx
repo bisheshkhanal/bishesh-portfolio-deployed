@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { socialLinks } from '../data/socialData';
-import { FaGithub, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaEnvelope, FaFileAlt } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 
 // Map social types to icons
@@ -9,6 +9,7 @@ const iconMap: Record<string, IconType> = {
   github: FaGithub,
   linkedin: FaLinkedin,
   email: FaEnvelope,
+  resume: FaFileAlt,
 };
 
 const headingVariants = {
