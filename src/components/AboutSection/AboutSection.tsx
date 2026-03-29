@@ -19,8 +19,6 @@ export default function AboutSection() {
         </div>
       </div>
 
-      <div className="border-t border-[var(--cyan)] my-8" />
-
       <ScenePortal />
     </section>
   );
