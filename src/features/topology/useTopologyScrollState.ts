@@ -46,7 +46,7 @@ function computeScrollState(offset: number): TopologyScrollState {
   };
 }
 
-export function useTopologyScrollState(previewMode?: boolean) {
+export function useTopologyScrollState() {
   const scroll = useScroll();
   const stateRef = useRef<TopologyScrollState>({
     scroll: 0,
@@ -58,11 +58,6 @@ export function useTopologyScrollState(previewMode?: boolean) {
   });
 
   useFrame(() => {
-    if (previewMode) {
-      stateRef.current = computeScrollState(0);
-      return;
-    }
-
     stateRef.current = computeScrollState(scroll.offset);
   });
 

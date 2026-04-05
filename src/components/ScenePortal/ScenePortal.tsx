@@ -1,7 +1,9 @@
 import { Component, ReactNode, useState, useRef, useEffect } from 'react';
 import { TopologyScene } from '../../features/topology/TopologyScene';
+import { TopologyPreview } from '../../features/topology/TopologyPreview';
 import { useTopologyQuality } from '../../features/topology/useTopologyQuality';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
+import { supportsWebGL } from '../webglSupport';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -22,6 +24,12 @@ class SceneErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
     return { hasError: true };
   }
 
+  componentDidCatch(error: Error, info: { componentStack: string }) {
+    if (import.meta.env.DEV) {
+      console.error('[ScenePortal] topology scene render error — showing fallback:', error, info.componentStack);
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return <>{this.props.fallback}</>;
@@ -38,6 +46,7 @@ export interface ScenePortalProps {
 export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
   const { particleCount } = useTopologyQuality();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const hasWebGL = supportsWebGL();
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -187,19 +196,27 @@ export function ScenePortal({ onExpand, className = '' }: ScenePortalProps) {
             <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>· esc</span>
           </button>
         )}
-        <SceneErrorBoundary
-          fallback={
-            <div className="p-4 text-sm text-[var(--gray)] text-center">
-              Interactive scene unavailable.
-            </div>
-          }
-        >
-          <TopologyScene
-            particleCount={particleCount}
-            frameloop="always"
-            previewMode={!isOpen}
-          />
-        </SceneErrorBoundary>
+        <div className="absolute inset-0">
+          <SceneErrorBoundary
+            fallback={
+              <div className="p-4 text-sm text-[var(--gray)] text-center">
+                Interactive scene unavailable.
+              </div>
+            }
+          >
+            {hasWebGL ? (
+              isOpen ? (
+                <TopologyScene particleCount={particleCount} frameloop="always" />
+              ) : (
+                <TopologyPreview particleCount={particleCount} />
+              )
+            ) : (
+              <div className="p-4 text-sm text-[var(--gray)] text-center">
+                Interactive scene unavailable.
+              </div>
+            )}
+          </SceneErrorBoundary>
+        </div>
       </div>
       {!isOpen && (
         <p className="mt-3 text-xs text-white/35 tracking-[0.2em] uppercase text-center select-none pointer-events-none">

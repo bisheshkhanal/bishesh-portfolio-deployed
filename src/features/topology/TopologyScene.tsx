@@ -53,32 +53,22 @@ function TopologyParticles({ scrollStateRef, particleCount }: ParticlesProps) {
   );
 }
 
-interface TopologyContentProps {
-  particleCount: number;
-  previewMode?: boolean;
-}
-
-function TopologyContent({ particleCount, previewMode }: TopologyContentProps) {
-  const scrollStateRef = useTopologyScrollState(previewMode);
+function TopologyContent({ particleCount }: { particleCount: number }) {
+  const scrollStateRef = useTopologyScrollState();
 
   return (
     <>
       <TopologyParticles scrollStateRef={scrollStateRef} particleCount={particleCount} />
       <TopologyEffects scrollStateRef={scrollStateRef} />
-      {!previewMode && <TopologyOverlay />}
+      <TopologyOverlay />
     </>
   );
 }
 
-interface TopologySceneInnerProps {
-  particleCount: number;
-  previewMode?: boolean;
-}
-
-function TopologySceneInner({ particleCount, previewMode }: TopologySceneInnerProps) {
+function TopologySceneInner({ particleCount }: { particleCount: number }) {
   return (
     <ScrollControls pages={4} damping={0.1}>
-      <TopologyContent particleCount={particleCount} previewMode={previewMode} />
+      <TopologyContent particleCount={particleCount} />
     </ScrollControls>
   );
 }
@@ -86,13 +76,11 @@ function TopologySceneInner({ particleCount, previewMode }: TopologySceneInnerPr
 export interface TopologySceneProps {
   particleCount?: number;
   frameloop?: 'always' | 'demand';
-  previewMode?: boolean;
 }
 
 export function TopologyScene({
   particleCount = PARTICLE_COUNTS.high,
   frameloop = 'always',
-  previewMode,
 }: TopologySceneProps) {
   return (
     <Canvas
@@ -101,7 +89,7 @@ export function TopologyScene({
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: false }}
     >
-      <TopologySceneInner particleCount={particleCount} previewMode={previewMode} />
+      <TopologySceneInner particleCount={particleCount} />
     </Canvas>
   );
 }
