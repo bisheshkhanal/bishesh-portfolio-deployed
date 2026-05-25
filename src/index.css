@@ -59,6 +59,33 @@ code {
   pointer-events: none !important;
 }
 
+/* Intro overlay — fullscreen cinematic intro gate */
+body.intro-active {
+  overflow: hidden;
+}
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-black);
+  transition: opacity 600ms ease-out;
+}
+
+.intro-overlay.intro-exiting {
+  opacity: 0;
+}
+
+/* Hide DNA rail during intro */
+body.intro-active [data-testid="dna-rail"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.intro-active [data-testid="dna-canvas"] {
+  visibility: hidden;
+}
+
 @layer utilities {
   .bg-diagonal-grid {
     background-image:

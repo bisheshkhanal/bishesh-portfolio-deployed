@@ -1,9 +1,15 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes } from 'react-router-dom';
 import DNAHelix from '../components/DNAHelix/DNAHelix';
+import { useIntroGate } from '../features/topology/useIntroGate';
 import { MainLayout } from '../layouts/MainLayout';
 import HomeRoute from '../routes/HomeRoute';
 import WorkRoute from '../routes/WorkRoute';
 import WritingRoute from '../routes/WritingRoute';
+
+const IntroOverlay = lazy(() =>
+  import('../features/topology/IntroOverlay').then((m) => ({ default: m.IntroOverlay })),
+);
 
 const shellLinks: ReadonlyArray<{ to: string; label: string; end?: boolean }> = [
   { to: '/', label: 'Home', end: true },
@@ -42,16 +48,25 @@ function ShellLayout() {
 }
 
 export default function App() {
+  const { shouldShowIntro, markIntroDone } = useIntroGate();
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<ShellLayout />}>
-          <Route index element={<HomeRoute />} />
-          <Route path="work" element={<WorkRoute />} />
-          <Route path="experiments" element={<Navigate to="/work" replace />} />
-          <Route path="writing" element={<WritingRoute />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <>
+      {shouldShowIntro && (
+        <Suspense fallback={null}>
+          <IntroOverlay onExit={markIntroDone} />
+        </Suspense>
+      )}
+      <BrowserRouter>
+        <Routes>
+          <Route element={<ShellLayout />}>
+            <Route index element={<HomeRoute />} />
+            <Route path="work" element={<WorkRoute />} />
+            <Route path="experiments" element={<Navigate to="/work" replace />} />
+            <Route path="writing" element={<WritingRoute />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
