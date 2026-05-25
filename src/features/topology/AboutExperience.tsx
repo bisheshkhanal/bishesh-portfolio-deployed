@@ -6,9 +6,10 @@ export interface AboutExperienceProps {
   className?: string;
   style?: React.CSSProperties;
   frameloop?: 'always' | 'demand';
+  onComplete?: () => void;
 }
 
-export function AboutExperience({ className, style, frameloop = 'always' }: AboutExperienceProps = {}) {
+export function AboutExperience({ className, style, frameloop = 'always', onComplete }: AboutExperienceProps = {}) {
   const { prefersReducedMotion, particleCount } = useTopologyQuality();
 
   if (prefersReducedMotion) {
@@ -21,7 +22,7 @@ export function AboutExperience({ className, style, frameloop = 'always' }: Abou
 
   return (
     <div className={className} style={{ width: '100%', height: '100%', ...style }}>
-      <TopologyScene particleCount={particleCount} frameloop={frameloop} />
+      <TopologyScene particleCount={particleCount} frameloop={frameloop} onComplete={onComplete} />
     </div>
   );
 }
