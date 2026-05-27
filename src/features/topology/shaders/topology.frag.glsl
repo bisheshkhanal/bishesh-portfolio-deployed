@@ -49,11 +49,26 @@ void main() {
   // Matches Helix.tsx: color.setRGB(0.90 + depthFactor * 0.10, ...)
   // vDepth: 0 = near (bright), 1 = far (dim) — CRITICAL: direction is inverted from naive assumption
   float depthBrightness = 1.0 - vDepth * 0.15; // 1.0 near, 0.85 far
+
+  // Sphere impostor: derive a bead normal from the point-coord disc
+  vec2 sphereUv = gl_PointCoord * 2.0 - 1.0;
+  float sphereR2 = dot(sphereUv, sphereUv);
+  float sphereZ = sqrt(max(0.0, 1.0 - sphereR2));
+  vec3 sphereNormal = normalize(vec3(sphereUv, sphereZ));
+
+  // Hardcoded screen-space light from upper-left/front
+  vec3 lightDir = normalize(vec3(-0.35, 0.45, 0.85));
+  float diffuse = max(dot(sphereNormal, lightDir), 0.0);
+  float coreHighlight = pow(diffuse, 6.0);
+  float edgeFalloff = smoothstep(0.0, 0.7, sphereZ);
+  float sphereSpecular = coreHighlight * mix(0.55, 0.2, vDepth);
+  float sphereShade = mix(0.55, 1.0, diffuse) * edgeFalloff + sphereSpecular;
+
   // Reference uniforms for live-tunability (not hardcoded)
   vec3 strandColor = uColorBioStrand1 * depthBrightness;
   vec3 rungColor = uColorBioStrand2 * depthBrightness;
   vec3 kobColor = mix(strandColor, rungColor, vIsRung);
-  vec3 bioColor = kobColor * bioShape;
+  vec3 bioColor = kobColor * sphereShade * bioShape;
 
   // Beat 2: Quantized Embedding Matrix — orange tokens, green attention flash
   // IMPORTANT: Cannot use vWavePhase for attention state — Beat 3 overwrites it with
