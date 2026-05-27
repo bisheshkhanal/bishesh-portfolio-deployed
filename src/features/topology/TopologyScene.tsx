@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ScrollControls } from '@react-three/drei';
 import { BufferGeometry, BufferAttribute } from 'three';
+import { Beat1DNAOverlay } from './Beat1DNAOverlay';
 import { TopologyOverlay } from './TopologyOverlay';
 import { TopologyCameraRig } from './TopologyCameraRig';
 import { TopologyEffects } from './TopologyEffects';
@@ -72,6 +73,7 @@ function TopologyContent({ particleCount, onComplete }: TopologyContentProps) {
   return (
     <>
       <TopologyParticles scrollStateRef={scrollStateRef} particleCount={particleCount} />
+      <Beat1DNAOverlay scrollStateRef={scrollStateRef} />
       <TopologyEffects scrollStateRef={scrollStateRef} />
       <TopologyOverlay />
     </>
