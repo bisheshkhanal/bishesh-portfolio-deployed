@@ -8,8 +8,8 @@ export function createTopologyUniforms() {
 
     // Beat 1 — Bio
     // Lower intensity to survive additive blending without blowing out to white
-    uColorBioStrand1: { value: new Color('#00CCDD') }, // Bright cyan, tuned for additive blending
-    uColorBioStrand2: { value: new Color('#CCFFEE') }, // White with green tint for rungs
+    uColorBioStrand1: { value: new Color('#e0e0e0') }, // Sidebar-matched gray
+    uColorBioStrand2: { value: new Color('#e0e0e0') }, // Match strand to avoid additive rung bright spots
 
     // Beat 2 — Lattice
     uColorLatticeSlate: { value: new Color('#000000') }, // Pure black base

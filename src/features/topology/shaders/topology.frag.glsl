@@ -39,30 +39,20 @@ void main() {
   if (dist > 0.5) discard;
   float alpha = smoothstep(0.5, 0.1, dist);
 
-  // ---------------------------------------------------------------------------
-  // Beat 1 Redesign — ykob Math and Visuals (Ground-Up Rewrite)
-  // Copyright (c) 2021 Yoichi Kobayashi
-  // Released under the MIT license
-  // http://opensource.org/licenses/mit-license.php
-  // ---------------------------------------------------------------------------
-  // --- KOBAYASHI-INSPIRED COLOR & SHAPE ---
-  // Distance from center, scaled up slightly for the ring
-  float r = length(gl_PointCoord - vec2(0.5)) * 2.0;
-  
-  // Hollow glow shape
-  float core = (1.0 - smoothstep(0.5, 0.7, r)) * 0.5;
-  float ring = smoothstep(0.8, 0.9, r) * smoothstep(1.2, 1.0, r) * 0.5;
-  float bioShape = core + ring;
-  
-  // Color variation based on delay
-  // Strand color: cyan from uniform, modulated by delay for subtle variation
-  vec3 strandColor = uColorBioStrand1 * (0.7 + vDelay * 0.05);
-  // Rung color: white/green from uniform, brighter to stand out as base pairs
-  vec3 rungColor = uColorBioStrand2 * 1.2;
-  // Blend strand vs rung based on vIsRung
+  // Beat 1: Solid filled DNA helix dots — matches sidebar DNA scrollbar aesthetic
+  // Solid disc shape (replaces hollow ring)
+  // Reuse the existing shared soft-circle mask so line 40 stays the source of truth.
+  // Suppress dust in Beat 1 so filled-disc dust does not create a haze absent from the sidebar reference.
+  float bioShape = alpha * mix(1.0, 0.2, vIsDust);
+
+  // Gray/white palette with depth variation (near=bright, far=dim)
+  // Matches Helix.tsx: color.setRGB(0.90 + depthFactor * 0.10, ...)
+  // vDepth: 0 = near (bright), 1 = far (dim) — CRITICAL: direction is inverted from naive assumption
+  float depthBrightness = 1.0 - vDepth * 0.15; // 1.0 near, 0.85 far
+  // Reference uniforms for live-tunability (not hardcoded)
+  vec3 strandColor = uColorBioStrand1 * depthBrightness;
+  vec3 rungColor = uColorBioStrand2 * depthBrightness;
   vec3 kobColor = mix(strandColor, rungColor, vIsRung);
-  
-  // Combine shape with base color and Kobayashi variation
   vec3 bioColor = kobColor * bioShape;
 
   // Beat 2: Quantized Embedding Matrix — orange tokens, green attention flash
@@ -118,8 +108,11 @@ void main() {
                   + chaosColor   * uBeatWeights.z
                   + torusColor   * uBeatWeights.w;
 
-  // Final Beat 1 Alpha
-  float bioAlpha = bioShape * mix(1.0, 0.3, vDepth);
+  // Beat 1 Alpha — thinned for additive blending with 80k particles
+  // With AdditiveBlending, ~100 overlapping particles at strand spine:
+  // 100 * 0.85 * 0.008 ≈ 0.68 brightness — visible but not blown out
+  // Start at 0.008, tune in T3 if needed
+  float bioAlpha = bioShape * mix(0.008, 0.003, vDepth);
 
   // Beat 1 & 2 need enough alpha to be visible but not blow out
   float baseAlpha = alpha * (0.04 + vDepth * 0.02);
