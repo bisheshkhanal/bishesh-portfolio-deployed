@@ -1,21 +1,21 @@
 import { useRef, useLayoutEffect, useMemo, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { HELIX_CONFIG } from './topologyConfig';
 import type { TopologyScrollState } from './topologyTypes';
 
-const { ROTATIONS, RADIUS, HEIGHT } = HELIX_CONFIG;
+// Sidebar-derived constants — match Helix.tsx exactly
 const STEPS = 60;
-const DIAG_ANGLE = -0.785; // matches vertex shader diagAngle (rotation around Z)
-const BEAD_RADIUS = 0.14;
-const LINE_BASE_OPACITY = 0.10;
+const ROTATIONS = 5;
+const RADIUS = 4.5;   // scaled up from sidebar's BASE_RADIUS=3 to match particle cloud visual size
+const HEIGHT = 42;    // slightly less than topology HEIGHT=45 to sit inside the cloud
+const BEAD_RADIUS = 0.24; // sidebar baseScale
+const LINE_BASE_OPACITY = 0.10; // sidebar latticeOpacity
 
-interface BasePoint {
+interface BeadPoint {
   x: number;
   y: number;
   z: number;
-  progress: number;
-  delay: number;
+  depthFactor: number; // (z + RADIUS) / (2 * RADIUS) — for color brightness
 }
 
 export interface Beat1DNAOverlayProps {
@@ -23,101 +23,106 @@ export interface Beat1DNAOverlayProps {
 }
 
 export function Beat1DNAOverlay({ scrollStateRef }: Beat1DNAOverlayProps) {
+  const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const lineRef = useRef<THREE.LineSegments>(null);
   const scratchObj = useRef(new THREE.Object3D()).current;
 
-  // Pre-rotation strand positions (rotation applied via parent <group>).
-  const basePoints = useMemo<{ a: BasePoint[]; b: BasePoint[] }>(() => {
-    const a: BasePoint[] = [];
-    const b: BasePoint[] = [];
+  // Sidebar math convention: cos(angle) for X, sin(angle) for Z
+  // Y is the long axis — vertical, no Z rotation
+  const basePoints = useMemo<{ a: BeadPoint[]; b: BeadPoint[] }>(() => {
+    const a: BeadPoint[] = [];
+    const b: BeadPoint[] = [];
     for (let i = 0; i < STEPS; i++) {
       const progress = i / (STEPS - 1);
-      const baseAngle = progress * ROTATIONS * 2 * Math.PI;
-      const baseY = THREE.MathUtils.lerp(-HEIGHT / 2, HEIGHT / 2, progress);
-      const delay = (i / STEPS) * Math.PI * 2;
-      // sin for X, cos for Z — matches topology.vert.glsl convention
-      a.push({
-        x: Math.sin(baseAngle) * RADIUS,
-        y: baseY,
-        z: Math.cos(baseAngle) * RADIUS,
-        progress,
-        delay,
-      });
-      b.push({
-        x: Math.sin(baseAngle + Math.PI) * RADIUS,
-        y: baseY,
-        z: Math.cos(baseAngle + Math.PI) * RADIUS,
-        progress,
-        delay: delay + Math.PI,
-      });
+      const angle = progress * ROTATIONS * 2 * Math.PI;
+      const y = THREE.MathUtils.lerp(-HEIGHT / 2, HEIGHT / 2, progress);
+
+      const xA = Math.cos(angle) * RADIUS;
+      const zA = Math.sin(angle) * RADIUS;
+      const xB = Math.cos(angle + Math.PI) * RADIUS;
+      const zB = Math.sin(angle + Math.PI) * RADIUS;
+
+      a.push({ x: xA, y, z: zA, depthFactor: (zA + RADIUS) / (2 * RADIUS) });
+      b.push({ x: xB, y, z: zB, depthFactor: (zB + RADIUS) / (2 * RADIUS) });
     }
     return { a, b };
   }, []);
 
   const totalInstances = basePoints.a.length + basePoints.b.length;
 
-  // Build line geometry (backbone + rungs) once, deterministic.
+  // Build line geometry (backbone + rungs) once — deterministic, no Math.random
   const lineGeometry = useMemo(() => {
-    const points: THREE.Vector3[] = [];
+    const pts: THREE.Vector3[] = [];
+
     // Strand A backbone
     for (let i = 0; i < basePoints.a.length - 1; i++) {
       const p0 = basePoints.a[i];
       const p1 = basePoints.a[i + 1];
-      points.push(new THREE.Vector3(p0.x, p0.y, p0.z));
-      points.push(new THREE.Vector3(p1.x, p1.y, p1.z));
+      pts.push(new THREE.Vector3(p0.x, p0.y, p0.z));
+      pts.push(new THREE.Vector3(p1.x, p1.y, p1.z));
     }
     // Strand B backbone
     for (let i = 0; i < basePoints.b.length - 1; i++) {
       const p0 = basePoints.b[i];
       const p1 = basePoints.b[i + 1];
-      points.push(new THREE.Vector3(p0.x, p0.y, p0.z));
-      points.push(new THREE.Vector3(p1.x, p1.y, p1.z));
+      pts.push(new THREE.Vector3(p0.x, p0.y, p0.z));
+      pts.push(new THREE.Vector3(p1.x, p1.y, p1.z));
     }
-    // Rungs
+    // Rungs (strand A ↔ strand B at each step)
     for (let i = 0; i < basePoints.a.length; i++) {
       const pa = basePoints.a[i];
       const pb = basePoints.b[i];
-      points.push(new THREE.Vector3(pa.x, pa.y, pa.z));
-      points.push(new THREE.Vector3(pb.x, pb.y, pb.z));
+      pts.push(new THREE.Vector3(pa.x, pa.y, pa.z));
+      pts.push(new THREE.Vector3(pb.x, pb.y, pb.z));
     }
-    return new THREE.BufferGeometry().setFromPoints(points);
+
+    return new THREE.BufferGeometry().setFromPoints(pts);
   }, [basePoints]);
 
-  // Initial matrix + color setup. Matrices get overwritten by useFrame each tick.
+  // Set instance matrices and colors once — positions are static, only group.rotation.y animates
   useLayoutEffect(() => {
     const mesh = meshRef.current;
     if (!mesh) return;
+
     const color = new THREE.Color();
     let index = 0;
-    const apply = (p: BasePoint) => {
+
+    const applyBead = (p: BeadPoint) => {
       scratchObj.position.set(p.x, p.y, p.z);
       scratchObj.scale.setScalar(1);
       scratchObj.updateMatrix();
       mesh.setMatrixAt(index, scratchObj.matrix);
-      const depthFactor = (p.z + RADIUS) / (2 * RADIUS);
-      const brightness = 0.90 + depthFactor * 0.10;
+
+      // White-ish with depth variation — matches Helix.tsx: 0.90 + depthFactor * 0.10
+      const brightness = 0.90 + p.depthFactor * 0.10;
       color.setRGB(brightness, brightness, brightness);
       mesh.setColorAt(index, color);
       index++;
     };
-    basePoints.a.forEach(apply);
-    basePoints.b.forEach(apply);
+
+    basePoints.a.forEach(applyBead);
+    basePoints.b.forEach(applyBead);
+
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   }, [basePoints, scratchObj]);
 
+  // useFrame: ONLY update opacity + slow Y rotation — no per-bead position writes
   useFrame((state) => {
     const mesh = meshRef.current;
     const line = lineRef.current;
-    if (!mesh) return;
+    const group = groupRef.current;
+    if (!mesh || !group) return;
 
     const beatWeight = scrollStateRef.current?.beatWeights.x ?? 0;
-    const meshMaterial = mesh.material as THREE.MeshBasicMaterial;
-    meshMaterial.opacity = beatWeight;
+
+    const meshMat = mesh.material as THREE.MeshBasicMaterial;
+    meshMat.opacity = beatWeight;
+
     if (line) {
-      const lineMaterial = line.material as THREE.LineBasicMaterial;
-      lineMaterial.opacity = beatWeight * LINE_BASE_OPACITY;
+      const lineMat = line.material as THREE.LineBasicMaterial;
+      lineMat.opacity = beatWeight * LINE_BASE_OPACITY;
     }
 
     if (beatWeight <= 0.001) return;
@@ -127,33 +132,28 @@ export function Beat1DNAOverlay({ scrollStateRef }: Beat1DNAOverlayProps) {
       Boolean((window as unknown as { __DNA_E2E__?: boolean }).__DNA_E2E__);
     const time = isE2E ? 0 : state.clock.elapsedTime;
 
-    let index = 0;
-    const updateOne = (p: BasePoint) => {
-      const yVib = Math.sin(time * 4.0 + p.delay) * 0.3;
-      const peristaltic = Math.sin(time * 3.0 + p.progress * 20.0) * 0.15;
-      scratchObj.position.set(p.x, p.y + yVib + peristaltic, p.z);
-      scratchObj.scale.setScalar(1);
-      scratchObj.updateMatrix();
-      mesh.setMatrixAt(index, scratchObj.matrix);
-      index++;
-    };
-    basePoints.a.forEach(updateOne);
-    basePoints.b.forEach(updateOne);
-    mesh.instanceMatrix.needsUpdate = true;
+    // Slow Y rotation matching sidebar's time * 0.15
+    group.rotation.y = time * 0.15;
   });
 
   return (
-    <group rotation={[0, 0, DIAG_ANGLE]}>
+    // NO Z rotation — vertical orientation, group rotation.y handled in useFrame
+    <group ref={groupRef}>
       <instancedMesh
         ref={meshRef}
         args={[undefined, undefined, totalInstances]}
         raycast={() => null}
         frustumCulled={false}
       >
-        <sphereGeometry args={[BEAD_RADIUS, 8, 8]} />
+        <sphereGeometry args={[BEAD_RADIUS, 12, 12]} />
         <meshBasicMaterial vertexColors transparent depthWrite={false} />
       </instancedMesh>
-      <lineSegments ref={lineRef} geometry={lineGeometry} raycast={() => null} frustumCulled={false}>
+      <lineSegments
+        ref={lineRef}
+        geometry={lineGeometry}
+        raycast={() => null}
+        frustumCulled={false}
+      >
         <lineBasicMaterial color="#cfcfcf" transparent depthWrite={false} opacity={0} />
       </lineSegments>
     </group>

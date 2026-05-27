@@ -126,8 +126,11 @@ void main() {
   // Beat 1 Alpha — thinned for additive blending with 80k particles
   // With AdditiveBlending, ~100 overlapping particles at strand spine:
   // 100 * 0.85 * 0.008 ≈ 0.68 brightness — visible but not blown out
-  // Start at 0.008, tune in T3 if needed
-  float bioAlpha = bioShape * mix(0.008, 0.003, vDepth);
+  // Multiplied by (1.0 - uBeatWeights.x) so the particle cloud fades out
+  // as the Beat1DNAOverlay (sidebar-style helix) fades in. When Beat 1
+  // weight is 1.0 the cloud is invisible; when it is 0.0 the cloud is
+  // fully visible (Beats 2/3/4 unaffected — their terms use uBeatWeights.y/z/w).
+  float bioAlpha = bioShape * mix(0.008, 0.003, vDepth) * (1.0 - uBeatWeights.x);
 
   // Beat 1 & 2 need enough alpha to be visible but not blow out
   float baseAlpha = alpha * (0.04 + vDepth * 0.02);
