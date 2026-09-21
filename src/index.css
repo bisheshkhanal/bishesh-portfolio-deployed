@@ -29,9 +29,7 @@ body {
   margin: 0;
   background: var(--bg-black);
   color: var(--white);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -49,6 +47,43 @@ code {
 
 [data-testid="dna-canvas"] canvas {
   pointer-events: auto !important;
+}
+
+/* Hide DNA sidebar when portal is fullscreen */
+.portal-open [data-testid="dna-canvas"] {
+  visibility: hidden;
+}
+
+.portal-open [data-testid="dna-rail"],
+.portal-open [data-testid="dna-rail"] * {
+  pointer-events: none !important;
+}
+
+/* Intro overlay — fullscreen cinematic intro gate */
+body.intro-active {
+  overflow: hidden;
+}
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-black);
+  transition: opacity 600ms ease-out;
+}
+
+.intro-overlay.intro-exiting {
+  opacity: 0;
+}
+
+/* Hide DNA rail during intro */
+body.intro-active [data-testid="dna-rail"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.intro-active [data-testid="dna-canvas"] {
+  visibility: hidden;
 }
 
 @layer utilities {

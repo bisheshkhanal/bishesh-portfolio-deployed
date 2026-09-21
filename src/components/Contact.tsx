@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { socialLinks } from '../data/socialData';
-import { FaGithub, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaEnvelope, FaFileAlt } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 
 // Map social types to icons
@@ -9,6 +9,7 @@ const iconMap: Record<string, IconType> = {
   github: FaGithub,
   linkedin: FaLinkedin,
   email: FaEnvelope,
+  resume: FaFileAlt,
 };
 
 const headingVariants = {
@@ -18,7 +19,7 @@ const headingVariants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: [0.5, 1, 0.5, 1],
+      ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
     },
   },
 };
@@ -32,7 +33,8 @@ export default function Contact() {
          className="text-[48px] font-normal leading-tight mb-8 tracking-tight"
          variants={headingVariants}
          initial={prefersReducedMotion ? "visible" : "hidden"}
-         animate="visible"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.25 }}
        >
          Contact
        </motion.h2>

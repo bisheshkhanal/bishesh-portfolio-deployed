@@ -23,21 +23,6 @@ export default function Hero() {
          </p>
        </div>
 
-      <section id="about" className="mt-32 max-w-3xl">
-         <div className="space-y-4 mb-12">
-             {bio.subheaders.map((sub, idx) => (
-               <h2 key={idx} className="text-3xl lg:text-4xl font-light text-white/90 tracking-tight">
-                 {sub}
-               </h2>
-             ))}
-         </div>
-         <div className="space-y-6 text-lg text-[var(--gray)] leading-relaxed">
-            {bio.paragraphs.map((p, idx) => (
-              <p key={idx}>{p}</p>
-            ))}
-         </div>
-      </section>
-
       <button
         data-testid="hero-scroll-cue"
         onClick={scrollToProjects}

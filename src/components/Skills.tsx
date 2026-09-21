@@ -7,16 +7,15 @@ import {
   SiReact,
   SiNodedotjs,
   SiDjango,
-  SiHtml5,
-  SiCss3,
-  SiTailwindcss,
+  SiTypescript,
+  SiThreedotjs,
+  SiWebgl,
   SiPostgresql,
   SiMongodb,
   SiDocker,
-  SiAmazonwebservices,
   SiGithub,
 } from 'react-icons/si';
-import { FaJava } from 'react-icons/fa';
+import { FaAws, FaJava } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 
 // Map skill IDs to their react-icons components
@@ -24,17 +23,17 @@ const iconMap: Record<string, IconType> = {
   python: SiPython,
   java: FaJava,
   javascript: SiJavascript,
+  typescript: SiTypescript,
   react: SiReact,
-  react2: SiReact,
   node: SiNodedotjs,
   django: SiDjango,
-  html: SiHtml5,
-  css: SiCss3,
-  tailwind: SiTailwindcss,
+  threejs: SiThreedotjs,
+  r3f: SiThreedotjs,
+  webgl: SiWebgl,
   postgres: SiPostgresql,
   mongodb: SiMongodb,
   docker: SiDocker,
-  aws: SiAmazonwebservices,
+  aws: FaAws,
   github: SiGithub,
 };
 
@@ -59,7 +58,7 @@ export default function Skills() {
       y: 0,
       transition: {
         duration: 0.4,
-        ease: [0.5, 1, 0.5, 1],
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
       },
     },
   };
@@ -71,7 +70,7 @@ export default function Skills() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1],
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number],
       },
     },
   };
@@ -82,7 +81,8 @@ export default function Skills() {
           className="text-[48px] font-normal mb-12 tracking-tight"
           variants={headingVariants}
           initial={prefersReducedMotion ? "visible" : "hidden"}
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
         >
           Skills
         </motion.h2>
@@ -98,8 +98,9 @@ export default function Skills() {
 
                 <motion.div
                   className="grid grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-10"
-                  initial="hidden"
-                  animate="visible"
+                  initial={prefersReducedMotion ? "visible" : "hidden"}
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.25 }}
                   variants={containerVariants}
                 >
                   {group.skills.map((skill) => {
@@ -115,7 +116,7 @@ export default function Skills() {
                         transition={
                           shouldStagger
                             ? undefined
-                            : { duration: 0.4, ease: [0.5, 1, 0.5, 1], delay: 0 }
+                            : { duration: 0.4, ease: [0.5, 1, 0.5, 1] as [number, number, number, number], delay: 0 }
                         }
                       >
                         <div className="w-12 h-12 flex items-center justify-center mb-3">

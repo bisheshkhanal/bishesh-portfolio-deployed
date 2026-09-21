@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ScrollControls } from '@react-three/drei';
 import { BufferGeometry, BufferAttribute } from 'three';
+import { Beat1DNAOverlay } from './Beat1DNAOverlay';
 import { TopologyOverlay } from './TopologyOverlay';
 import { TopologyCameraRig } from './TopologyCameraRig';
 import { TopologyEffects } from './TopologyEffects';
@@ -14,6 +15,11 @@ import type { RefObject } from 'react';
 interface ParticlesProps {
   scrollStateRef: RefObject<TopologyScrollState>;
   particleCount: number;
+}
+
+interface TopologyContentProps {
+  particleCount: number;
+  onComplete?: () => void;
 }
 
 function TopologyParticles({ scrollStateRef, particleCount }: ParticlesProps) {
@@ -53,38 +59,54 @@ function TopologyParticles({ scrollStateRef, particleCount }: ParticlesProps) {
   );
 }
 
-function TopologyContent({ particleCount }: { particleCount: number }) {
+function TopologyContent({ particleCount, onComplete }: TopologyContentProps) {
   const scrollStateRef = useTopologyScrollState();
+  const completedRef = useRef(false);
+
+  useFrame(() => {
+    if (onComplete && !completedRef.current && scrollStateRef.current.scroll >= 0.95) {
+      completedRef.current = true;
+      onComplete();
+    }
+  });
 
   return (
     <>
       <TopologyParticles scrollStateRef={scrollStateRef} particleCount={particleCount} />
+      <Beat1DNAOverlay scrollStateRef={scrollStateRef} />
       <TopologyEffects scrollStateRef={scrollStateRef} />
       <TopologyOverlay />
     </>
   );
 }
 
-function TopologySceneInner({ particleCount }: { particleCount: number }) {
+function TopologySceneInner({ particleCount, onComplete }: TopologyContentProps) {
   return (
     <ScrollControls pages={4} damping={0.1}>
-      <TopologyContent particleCount={particleCount} />
+      <TopologyContent particleCount={particleCount} onComplete={onComplete} />
     </ScrollControls>
   );
 }
 
 export interface TopologySceneProps {
   particleCount?: number;
+  frameloop?: 'always' | 'demand';
+  onComplete?: () => void;
 }
 
-export function TopologyScene({ particleCount = PARTICLE_COUNTS.high }: TopologySceneProps) {
+export function TopologyScene({
+  particleCount = PARTICLE_COUNTS.high,
+  frameloop = 'always',
+  onComplete,
+}: TopologySceneProps) {
   return (
     <Canvas
+      frameloop={frameloop}
       camera={{ position: [8, 5, 12], fov: 50 }}
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: false }}
     >
-      <TopologySceneInner particleCount={particleCount} />
+      <TopologySceneInner particleCount={particleCount} onComplete={onComplete} />
     </Canvas>
   );
 }

@@ -18,25 +18,32 @@ export const BEAT_CONFIGS: BeatConfig[] = [
     scrollStart: 0.25,
     scrollEnd: 0.50,
     label: 'Computation',
-    copy: 'In agentic engineering, tokens are the DNA of language models. They don\'t create semantic meaning from nothing. They encode potential into discrete, computational units — a lattice of vectors waiting to be transformed.',
+    copy: 'Bits are the fundamental DNA of computation—binary sequences encoding infinite potential. In agentic systems, these bits abstract into tokens, the DNA of language models. They flow through dual processing lanes, passing through staged gates where raw potential transforms into structured output.',
   },
   {
     scrollStart: 0.50,
     scrollEnd: 0.75,
     label: 'Maya',
-    copy: 'Beyond code and biology, this is how I view existence. The multiplicity of life — the chaos, the separate objects, the distinct events — is an encoding. An illusion. What the Vedantic tradition calls Maya.',
+    copy: 'This is where the framework locks into place. Perspective and movement are the encoding mechanism that generates units of experience — what the Vedantic tradition calls Maya. The apparent multiplicity of life is an illusion created by this encoding: unity fractured into discrete units through the lens of perspective.',
   },
   {
     scrollStart: 0.75,
     scrollEnd: 1.00,
     label: 'Brahman',
-    copy: 'Underneath the DNA, underneath the tokens, underneath the movement of life, is a single, continuous potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the underlying canvas.',
+    copy: 'Beneath appearance, beneath mechanism, beneath the encoding of units into multiplicity — there is a single, continuous truth, a potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the substrate beneath all four layers of this topology.',
   },
 ];
 
 // Helix geometry constants
+// These values MUST match the hardcoded constants in topology.vert.glsl lines ~105-107
 export const HELIX_CONFIG = {
-  ROTATIONS: 8,
-  RADIUS: 3.0,
-  HEIGHT: 20.0,
+  ROTATIONS: 3.5,
+  RADIUS: 5.0,
+  HEIGHT: 45.0,
+} as const;
+
+// Torus geometry constants for Beat 4 (Brahman)
+export const TORUS_CONFIG = {
+  MAJOR_RADIUS: 12.0,  // R - distance from center of tube to center of torus
+  MINOR_RADIUS: 4.0,   // r - radius of the tube
 } as const;

@@ -1,6 +1,5 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Helix } from './Helix';
-import { DNAMarkerId } from '../../hooks/useDNAMarkerAnchors';
 import { Suspense, CSSProperties, useCallback, useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -9,7 +8,7 @@ interface SceneProps {
   onNavigate?: (sectionId: string) => void;
   activeSection?: string;
   isE2E?: boolean;
-  markerTs: Record<DNAMarkerId, number>;
+  markerTs: Record<string, number>;
   className?: string;
   style?: CSSProperties;
 }
@@ -119,19 +118,15 @@ function CameraManager({ helixScale }: { helixScale: number }) {
       lastUpdateRef.current = performance.now();
     }
 
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any).__DNA_DEBUG__) {
       const debug = (window as any).__DNA_DEBUG__;
       debug.cameraFov = currentFovRef.current;
       debug.cameraZ = currentZRef.current;
       debug.canvasPx = Math.round(canvasWidth);
       debug.aspect = parseFloat(aspect.toFixed(3));
       debug.isNarrow = isNarrowRef.current;
-      if (!debug.markers || !debug.markers.projects || !debug.markers.skills) {
-        debug.markers = {
-          hero: { x: 0, y: 0, visible: false },
-          projects: { x: 0, y: 0, visible: false },
-          skills: { x: 0, y: 0, visible: false }
-        };
+      if (!debug.markers || Object.keys(debug.markers).length === 0) {
+        debug.markers = {};
       }
     }
   }, [camera, helixScale, size, viewport]);
@@ -180,7 +175,7 @@ export function Scene({ scrollProgress, onNavigate, activeSection, isE2E, marker
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
         onPointerMissed={() => {
-          if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
+          if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any).__DNA_DEBUG__) {
             const debug = (window as any).__DNA_DEBUG__;
             debug.pointerMissedCount = (debug.pointerMissedCount ?? 0) + 1;
           }

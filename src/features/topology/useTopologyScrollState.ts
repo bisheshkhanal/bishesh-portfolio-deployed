@@ -9,24 +9,10 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-function easeInExpo(t: number): number {
-  return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
-}
-
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
-}
-
 // Maps raw scroll offset (0-1) to beat weights and derived values
 function computeScrollState(offset: number): TopologyScrollState {
   // Beat ranges: 0-0.25, 0.25-0.5, 0.5-0.75, 0.75-1.0
   const TRANSITION = 0.04; // overlap fraction for smooth blending
-
-  // Local progress within each beat (0-1)
-  const b1 = smoothstep(0.00, 0.25, offset);
-  const b2 = smoothstep(0.25, 0.50, offset);
-  const b3 = smoothstep(0.50, 0.75, offset);
-  const b4 = smoothstep(0.75, 1.00, offset);
 
   // Beat weights: helix fades out as lattice fades in, etc.
   const helixW  = Math.max(0, 1 - smoothstep(0.25 - TRANSITION, 0.25 + TRANSITION, offset));

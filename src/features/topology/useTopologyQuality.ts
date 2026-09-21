@@ -9,6 +9,8 @@ export interface TopologyQuality {
 }
 
 function detectTier(): ParticleTier {
+  if (typeof navigator === 'undefined') return 'medium';
+  
   // Use hardware concurrency as a proxy for device capability
   const cores = navigator.hardwareConcurrency ?? 4;
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
@@ -30,6 +32,7 @@ export function useTopologyQuality(): TopologyQuality {
   });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mq.addEventListener('change', handler);

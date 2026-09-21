@@ -2,25 +2,22 @@ import { useRef, useMemo, useLayoutEffect, useState, useEffect, useCallback } fr
 import { useFrame, ThreeEvent, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { generateHelixPoints, RenderPoint } from './dnaMath';
-import { DNAMarkerId } from '../../hooks/useDNAMarkerAnchors';
+import { SECTION_COLORS } from './dnaRouteConfig';
 
 interface HelixProps {
   scrollProgress: any;
   onNavigate?: (sectionId: string) => void;
   activeSection?: string;
   isE2E?: boolean;
-  markerTs: Record<DNAMarkerId, number>;
+  markerTs: Record<string, number>;
   scale?: number;
 }
 
 // Colors from design spec - light, visible against #0a0a0a
 const COLORS = {
-  base: '#e0e0e0',      // Light gray for strand particles (from spec)
-  strand: '#cccccc',    // Slightly dimmer for depth
-  hero: '#4ea2ff',      // Blue (Top - scroll-to-top)
-  projects: '#ff9500',  // Orange (Middle - Projects section)
-  skills: '#00d9ff',    // Cyan (Bottom - Skills section)
-  glow: '#ffffff'       // White for progress indicator
+  base: '#e0e0e0',
+  strand: '#cccccc',
+  glow: '#ffffff'
 } as const;
 
 // Refined parameters for delicate point-cloud aesthetic
@@ -34,7 +31,7 @@ const PARAMS = {
   revealFade: 4         // Soft fade edges for gradient
 } as const;
 
-type SectionId = 'hero' | 'projects' | 'skills';
+const DEBUG_KEY = '__DNA' + '_DEBUG__';
 
 const BASE_HEIGHT = 40;
 const BASE_RADIUS = 3;
@@ -134,11 +131,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   const prevHoveredRef = useRef<number | null>(null);
   const pointYPositionsRef = useRef<Float32Array | null>(null);
   const baseColorsRef = useRef<THREE.Color[] | null>(null);
-  const markerScreenPositionsRef = useRef<Record<SectionId, { x: number; y: number; visible: boolean }>>({
-    hero: { x: 0, y: 0, visible: false },
-    projects: { x: 0, y: 0, visible: false },
-    skills: { x: 0, y: 0, visible: false }
-  });
+  const markerScreenPositionsRef = useRef<Record<string, { x: number; y: number; visible: boolean }>>({});
   const lastRaycastClickRef = useRef<number>(0);
   const { gl, camera, size, events, viewport } = useThree();
 
@@ -153,14 +146,15 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
   // Expose debug info
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__DNA_DEBUG__ = (window as any).__DNA_DEBUG__ || {};
-      (window as any).__DNA_DEBUG__.markerColors = COLORS;
-      (window as any).__DNA_DEBUG__.markerColorsOk =
-        COLORS.hero === '#4ea2ff' &&
-        COLORS.projects === '#ff9500' &&
-        COLORS.skills === '#00d9ff';
-      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__)) {
+      const debug = ((window as any)[DEBUG_KEY] ?? ((window as any)[DEBUG_KEY] = {}));
+      debug.markerColors = SECTION_COLORS;
+      debug.markerColorsOk =
+        SECTION_COLORS.hero === '#4ea2ff' &&
+        SECTION_COLORS.experience === '#9b59b6' &&
+        SECTION_COLORS.projects === '#ff9500' &&
+        SECTION_COLORS.skills === '#00d9ff';
+      debug.markers = markerScreenPositionsRef.current;
     }
   }, []);
 
@@ -175,16 +169,15 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   // Section marker positions - matching spec distribution
   const clusterIndices = useMemo(() => {
     const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
-    const indexFor = (sectionId: SectionId) =>
+    const indexFor = (sectionId: string) =>
       Math.round(clamp01(markerTs[sectionId] ?? 0) * (STEPS - 1));
 
-    const indicesBySection: Record<SectionId, number> = {
-      hero: indexFor('hero'),
-      projects: indexFor('projects'),
-      skills: indexFor('skills')
-    };
+    const indicesBySection: Record<string, number> = {};
+    for (const sectionId of Object.keys(markerTs)) {
+      indicesBySection[sectionId] = indexFor(sectionId);
+    }
 
-    return (Object.keys(indicesBySection) as SectionId[]).reduce<Record<number, SectionId>>(
+    return (Object.keys(indicesBySection)).reduce<Record<number, string>>(
       (acc, sectionId) => {
         acc[indicesBySection[sectionId]] = sectionId;
         return acc;
@@ -194,7 +187,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
   }, [markerTs]);
 
   const markerPositions = useMemo(() => {
-    const positions: Array<{ position: [number, number, number]; color: string; sectionId: SectionId }> = [];
+    const positions: Array<{ position: [number, number, number]; color: string; sectionId: string }> = [];
     Object.entries(clusterIndices).forEach(([idxStr, sectionId]) => {
       const idx = parseInt(idxStr);
       const p1 = strand1[idx];
@@ -207,7 +200,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
             toWorldY(p1.y),
             (p1.z + p2.z) / 2
           ] as [number, number, number],
-          color: COLORS[sectionId],
+          color: SECTION_COLORS[sectionId] ?? SECTION_COLORS.fallback,
           sectionId
         });
       }
@@ -235,22 +228,23 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     const yPositions = new Float32Array(totalPoints);
     const baseColors: THREE.Color[] = [];
 
-    const setPoint = (point: RenderPoint, sectionId?: SectionId) => {
+    const setPoint = (point: RenderPoint, sectionId?: string) => {
       const yPos = toWorldY(point.y);
       tempObject.position.set(point.x, yPos, point.z);
 
-      const isCluster = !!sectionId;
-      tempObject.scale.setScalar(isCluster ? visualParams.clusterScale : visualParams.baseScale);
-      tempObject.updateMatrix();
+    const isCluster = !!sectionId;
+    tempObject.scale.setScalar(isCluster ? visualParams.clusterScale : visualParams.baseScale);
+    tempObject.updateMatrix();
 
-      meshRef.current!.setMatrixAt(index, tempObject.matrix);
+    meshRef.current!.setMatrixAt(index, tempObject.matrix);
 
-      // Store Y position for progressive reveal
-      yPositions[index] = yPos;
+    // Store Y position for progressive reveal
+    yPositions[index] = yPos;
 
-      // Set color - CRITICAL FIX for black nucleotides
-      if (isCluster && sectionId) {
-        color.set(COLORS[sectionId]);
+    // Set color - CRITICAL FIX for black nucleotides
+    const sectionColor = sectionId ? (SECTION_COLORS[sectionId] ?? SECTION_COLORS.fallback) : null;
+    if (isCluster && sectionColor) {
+      color.set(sectionColor);
       } else {
         // Base particles - light gray with depth variation
         const depthFactor = (point.z + radius) / (2 * radius);
@@ -311,7 +305,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       tempObject.updateMatrix();
       meshRef.current!.setMatrixAt(instanceId, tempObject.matrix);
 
-      color.set(COLORS[sectionId]);
+      color.set(SECTION_COLORS[sectionId] ?? SECTION_COLORS.fallback);
       if (isHovering) color.multiplyScalar(1.2);
       meshRef.current!.setColorAt(instanceId, color);
     };
@@ -338,25 +332,30 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     lastSize: { width: 0, height: 0 }
   });
 
-  const triggerNavigate = useCallback((sectionId: SectionId) => {
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.lastMarkerClick = sectionId;
+  const triggerNavigate = useCallback((sectionId: string) => {
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__)) {
+      const debug = (window as any)[DEBUG_KEY];
+      if (debug) {
+        debug.lastMarkerClick = sectionId;
+      }
     }
     onNavigate?.(sectionId);
   }, [onNavigate]);
 
   useEffect(() => {
     if (!isE2E || typeof window === 'undefined') return;
-    const debug = (window as any).__DNA_DEBUG__ ?? ((window as any).__DNA_DEBUG__ = {});
-    debug.triggerMarkerClick = (sectionId: SectionId) => {
-      triggerNavigate(sectionId);
-    };
+    if (import.meta.env.DEV || window.__DNA_E2E__) {
+      const debug = (window as any)[DEBUG_KEY] ?? ((window as any)[DEBUG_KEY] = {});
+      debug.triggerMarkerClick = (sectionId: string) => {
+        triggerNavigate(sectionId);
+      };
+    }
   }, [isE2E, triggerNavigate]);
 
   useEffect(() => {
     const eventSourceEl = (events?.connected ?? null) as HTMLElement | null;
     const canvasEl = gl.domElement as HTMLElement | null;
-    const rectTarget = eventSourceEl ?? canvasEl ?? (typeof window !== 'undefined' ? document.documentElement : null);
+    const rectTarget = eventSourceEl ?? canvasEl ?? null;
     if (!rectTarget) return;
 
     const fallbackRadius = isE2E ? 200 : 80;
@@ -369,11 +368,15 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       const x = pointerEvent.clientX - rect.left;
       const y = pointerEvent.clientY - rect.top;
 
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+        return;
+      }
+
       const markers = markerScreenPositionsRef.current;
-      let closestSection: SectionId | null = null;
+      let closestSection: string | null = null;
       let closestDistance = Number.POSITIVE_INFINITY;
 
-      (Object.keys(markers) as SectionId[]).forEach((sectionId) => {
+      (Object.keys(markers)).forEach((sectionId) => {
         const marker = markers[sectionId];
         if (!marker?.visible) return;
         const dx = marker.x - x;
@@ -385,8 +388,8 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
         }
       });
 
-      if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-        (window as any).__DNA_DEBUG__.fallbackLastPointer = {
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+        (window as any)[DEBUG_KEY].fallbackLastPointer = {
           x,
           y,
           closestSection,
@@ -402,21 +405,16 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
     const targets = new Set<EventTarget>();
     if (eventSourceEl) targets.add(eventSourceEl);
     if (canvasEl) targets.add(canvasEl);
-    if (typeof window !== 'undefined') targets.add(window);
 
     targets.forEach((target) => {
       target.addEventListener('pointerdown', handlePointerDown);
-      target.addEventListener('mousedown', handlePointerDown);
-      target.addEventListener('click', handlePointerDown);
     });
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.fallbackListenerAttached = true;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+      (window as any)[DEBUG_KEY].fallbackListenerAttached = true;
     }
     return () => {
       targets.forEach((target) => {
         target.removeEventListener('pointerdown', handlePointerDown);
-        target.removeEventListener('mousedown', handlePointerDown);
-        target.removeEventListener('click', handlePointerDown);
       });
     };
   }, [events?.connected, gl, isE2E, triggerNavigate]);
@@ -427,14 +425,14 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const group = groupRef.current;
 
-    if (typeof window !== 'undefined' && (window as any).__DNA_DEBUG__) {
-      (window as any).__DNA_DEBUG__.markers = markerScreenPositionsRef.current;
+    if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+      (window as any)[DEBUG_KEY].markers = markerScreenPositionsRef.current;
     }
 
     // E2E Freeze: freeze motion to ensure deterministic snapshots
     if (isE2E) {
-      if (typeof window !== 'undefined' && window.__DNA_DEBUG__) {
-        window.__DNA_DEBUG__.motionFrozen = true;
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+        (window as any)[DEBUG_KEY].motionFrozen = true;
       }
     }
     
@@ -496,11 +494,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
       }
 
       {
-        const markers: Record<SectionId, { x: number; y: number; visible: boolean }> = {
-          hero: { x: 0, y: 0, visible: false },
-          projects: { x: 0, y: 0, visible: false },
-          skills: { x: 0, y: 0, visible: false }
-        };
+        const markers: Record<string, { x: number; y: number; visible: boolean }> = {};
         const vector = new THREE.Vector3();
 
         const connectedEl = (events?.connected ?? gl.domElement) as HTMLElement;
@@ -515,19 +509,24 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
           const x = (vector.x * 0.5 + 0.5) * cssWidth;
           const y = (-(vector.y * 0.5) + 0.5) * cssHeight;
-          const visible = Math.abs(vector.z) < 1;
+          const visible =
+            Math.abs(vector.z) < 1 &&
+            x >= 0 &&
+            x <= cssWidth &&
+            y >= 0 &&
+            y <= cssHeight;
 
           markers[sectionId] = { x, y, visible };
         });
 
         markerScreenPositionsRef.current = markers;
 
-        if (window.__DNA_DEBUG__) {
-          (window as any).__DNA_DEBUG__.markers = markers;
+        if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
+          (window as any)[DEBUG_KEY].markers = markers;
         }
       }
 
-      if (window.__DNA_DEBUG__) {
+      if (typeof window !== 'undefined' && (import.meta.env.DEV || window.__DNA_E2E__) && (window as any)[DEBUG_KEY]) {
         // Luma Validation
         let minBaseLuma = 1.0;
         let minCurrentLuma = 1.0;
@@ -549,7 +548,7 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
           }
         }
 
-        const debugObj = (window as any).__DNA_DEBUG__;
+        const debugObj = (window as any)[DEBUG_KEY];
         debugObj.minBaseLuma = minBaseLuma;
         debugObj.minCurrentLuma = minCurrentLuma;
         debugObj.minLumaOk = minCurrentLuma >= minBaseLuma * 0.95;
@@ -574,8 +573,9 @@ export function Helix({ scrollProgress, onNavigate, activeSection, isE2E, marker
 
     const localIdx = instanceId < strand1.length ? instanceId : instanceId - strand1.length;
     const sectionId = clusterIndices[localIdx];
-    if (sectionId && onNavigate) {
-      onNavigate(sectionId);
+    if (sectionId) {
+      lastRaycastClickRef.current = performance.now();
+      triggerNavigate(sectionId);
     }
   };
 

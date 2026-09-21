@@ -16,7 +16,8 @@ const CAM_POSITIONS = {
   beat2:      new Vector3(15, 0, 15),
   beat3Start: new Vector3(0, 0, 20),
   beat3End:   new Vector3(0, 0, 2),
-  beat4:      new Vector3(0, 1.5, 8),
+  beat4Start: new Vector3(0, 0, 0),    // Inside torus hole
+  beat4End:   new Vector3(0, 12, 30),  // Outside, revealing full torus
 } as const;
 
 const CAM_TARGETS = {
@@ -62,9 +63,13 @@ export function TopologyCameraRig({ scrollStateRef }: TopologyCameraRigProps) {
     const b3Local = smoothstep(0.5, 0.75, s);
     const beat3Pos = new Vector3().lerpVectors(CAM_POSITIONS.beat3Start, CAM_POSITIONS.beat3End, easeInExpo(b3Local));
 
-    // Beat 4: decelerate to (0,1.5,8) with easeOutCubic
+    // Beat 4: pull out from inside torus to reveal it
     const b4Local = smoothstep(0.75, 1.0, s);
-    const beat4Pos = new Vector3().lerpVectors(CAM_POSITIONS.beat3End, CAM_POSITIONS.beat4, easeOutCubic(b4Local));
+    const beat4Pos = new Vector3().lerpVectors(
+      CAM_POSITIONS.beat4Start,
+      CAM_POSITIONS.beat4End,
+      easeOutCubic(b4Local)
+    );
 
     // Blend camera position using beat weights
     const desiredPos = new Vector3()
@@ -87,8 +92,9 @@ export function TopologyCameraRig({ scrollStateRef }: TopologyCameraRigProps) {
     camera.position.copy(targetPos.current);
     camera.lookAt(targetLookAt.current);
 
-    // FOV: 50° → 65° during chaos, back to 50°
-    const desiredFov = 50 + cw * 15;
+    // FOV: 50° → 65° during chaos (Beat 3), 70° → 50° during Brahman (Beat 4)
+    const b4Fov = MathUtils.lerp(70, 50, easeOutCubic(b4Local));
+    const desiredFov = 50 + cw * 15 + (b4Fov - 50) * pw;
     (camera as PerspectiveCamera).fov = MathUtils.lerp(
       (camera as PerspectiveCamera).fov,
       desiredFov,

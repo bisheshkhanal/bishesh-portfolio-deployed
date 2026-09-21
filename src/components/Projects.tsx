@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import projects from '../data/projectsData';
-import { projectDetails } from '../data/projectDetailsData';
+import { projects, type Project } from '../data/projectsData';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 
 // Tech badge color-coding per design spec
@@ -17,9 +16,14 @@ const getBadgeColor = (tech: string) => {
   return 'bg-white/10 text-white/70';
 };
 
-export default function Projects() {
+interface ProjectsProps {
+  featured?: boolean;
+}
+
+export default function Projects({ featured = false }: ProjectsProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const displayProjects: Project[] = featured ? projects.filter((p) => p.featured) : projects;
 
   const toggle = (id: string) => {
     setExpanded((prev) => (prev === id ? null : id));
@@ -45,7 +49,7 @@ export default function Projects() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number]
       }
     }
   };
@@ -57,7 +61,7 @@ export default function Projects() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.5, 1, 0.5, 1] // cubic-bezier
+        ease: [0.5, 1, 0.5, 1] as [number, number, number, number]
       }
     }
   };
@@ -68,19 +72,21 @@ export default function Projects() {
          className="text-[48px] font-normal mb-12 tracking-tight"
          variants={headingVariants}
          initial={prefersReducedMotion ? "visible" : "hidden"}
-         animate="visible"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.25 }}
        >
          Projects
        </motion.h2>
 
       <motion.div
         className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-        initial="hidden"
-        animate="visible"
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.25 }}
         variants={containerVariants}
       >
-        {projects.map((p) => {
-          const detail: any = (projectDetails as any)[p.id];
+        {displayProjects.map((p) => {
+          const detail = p.details;
           const isOpen = expanded === p.id;
           
           return (
@@ -98,7 +104,17 @@ export default function Projects() {
             >
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-white tracking-tight">{p.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-2xl font-bold text-white tracking-tight">{p.title}</h3>
+                        {p.status === 'in-progress' && (
+                          <span
+                            data-testid="project-status-badge"
+                            className="px-3 py-1 rounded-md text-xs font-medium bg-[#ff9500]/20 text-[#ff9500]"
+                          >
+                            In Progress
+                          </span>
+                        )}
+                    </div>
                     <motion.div 
                         animate={{ rotate: isOpen ? 45 : 0 }}
                         className="text-white/50 text-2xl"
@@ -144,7 +160,7 @@ export default function Projects() {
                                   <>
                                     <h4 className="text-white/80 uppercase tracking-widest text-sm mb-4">Key Features</h4>
                                     <ul className="space-y-3">
-                                        {detail.features.map((f: any, idx: number) => (
+                                        {detail.features.map((f, idx) => (
                                         <li key={idx} className="flex items-start gap-3 text-[var(--gray)]">
                                             <span className="text-[var(--cyan)] mt-1.5 text-[10px]">●</span>
                                             <span>

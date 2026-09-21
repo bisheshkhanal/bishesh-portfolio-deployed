@@ -1,9 +1,17 @@
 import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useMotionValue, useSpring } from 'framer-motion';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { useDNAMarkerAnchors } from '../../hooks/useDNAMarkerAnchors';
 import { Scene } from './Scene';
+import {
+  DNA_ROUTE_CONFIG,
+  FALLBACK_ROUTE_CONFIG,
+  SECTION_COLORS,
+} from './dnaRouteConfig';
+import type { DNARouteConfig } from './dnaRouteConfig';
+import { projects } from '../../data/projectsData';
 
 declare global {
   interface Window {
@@ -42,9 +50,34 @@ const clamp = (value: number, min: number, max: number): number =>
 
 export default function DNAHelix() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const sectionIds = useMemo(() => ['hero', 'projects', 'skills'], []);
-  const activeSection = useActiveSection(sectionIds);
-  const { markerTs } = useDNAMarkerAnchors();
+  const location = useLocation();
+
+  const routeConfig: DNARouteConfig = useMemo(() => {
+    const base = DNA_ROUTE_CONFIG[location.pathname] ?? FALLBACK_ROUTE_CONFIG;
+
+    if (location.pathname !== '/work') return base;
+
+    const experimentProjects = projects.filter(p => p.isExperiment);
+    if (experimentProjects.length === 0) return base;
+
+    return {
+      ...base,
+      sectionIds: [...base.sectionIds, 'experiments'],
+      sections: [
+        ...base.sections,
+        {
+          id: 'experiments',
+          selector: '#experiments h2',
+          color: SECTION_COLORS.experiments,
+          label: 'Experiments',
+        },
+      ],
+    };
+  }, [location.pathname]);
+
+  const activeSection = useActiveSection(routeConfig.sectionIds);
+
+  const { markerTs } = useDNAMarkerAnchors(routeConfig);
   const isE2E = typeof window !== 'undefined' && window.__DNA_E2E__ === true;
   
   const rawScrollProgress = useMotionValue(0);
@@ -119,7 +152,8 @@ export default function DNAHelix() {
   }, [activeSection, isE2E]);
 
   const handleNavigate = useCallback((id: string) => {
-    if (id === 'hero') {
+    const firstSection = routeConfig.sectionIds[0];
+    if (id === firstSection) {
       window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
       return;
     }
@@ -127,7 +161,7 @@ export default function DNAHelix() {
     if (el) {
       el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, routeConfig.sectionIds]);
 
   useEffect(() => {
     if (!(import.meta.env.DEV || isE2E)) return;
