@@ -7,6 +7,8 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import HomeRoute from '../routes/HomeRoute';
 import WorkRoute from '../routes/WorkRoute';
 import WritingRoute from '../routes/WritingRoute';
+import PostRoute from '../routes/PostRoute';
+import NotFoundRoute from '../routes/NotFoundRoute';
 
 const IntroOverlay = lazy(() =>
   import('../features/topology/IntroOverlay').then((m) => ({ default: m.IntroOverlay })),
@@ -23,7 +25,6 @@ function ShellNavigation({ resetIntro }: { resetIntro: () => void }) {
   const links: ReadonlyArray<ShellLink> = [
     { to: '/', label: 'Home', end: true },
     { to: '/work', label: 'Work' },
-    { to: '/writing', label: 'Writing' },
     { label: 'Intro', onClick: resetIntro },
   ];
 
@@ -89,6 +90,8 @@ export default function App() {
             <Route path="work" element={<WorkRoute />} />
             <Route path="experiments" element={<Navigate to="/work" replace />} />
             <Route path="writing" element={<WritingRoute />} />
+            <Route path="writing/:slug" element={<PostRoute />} />
+            <Route path="*" element={<NotFoundRoute />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom';
+import { formatPostDate, posts } from '../data/postsData';
+
 export default function WritingRoute() {
   return (
     <section id="writing" className="w-full py-24 lg:py-32">
@@ -6,51 +9,43 @@ export default function WritingRoute() {
       <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/65">
         A living space for thoughts, learnings, and explorations on agentic engineering, AI infrastructure, and biotech.
       </p>
-      
-      <div className="mt-16 grid gap-8 border-t border-white/10 pt-16">
-        <article className="group relative flex flex-col items-start justify-between">
-          <div className="flex items-center gap-x-4 text-xs">
-            <time dateTime="2024-03-13" className="text-white/45">
-              Mar 13, 2024
-            </time>
-            <span className="relative z-10 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-medium text-white/65 hover:bg-white/10">
-              Agentic Engineering
-            </span>
-          </div>
-          <div className="group relative">
-            <h3 className="mt-3 text-xl font-semibold leading-6 text-white group-hover:text-white/80">
-              <a href="#">
-                <span className="absolute inset-0" />
-                The Shift to Agentic Workflows
-              </a>
-            </h3>
-            <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/65">
-              Exploring how moving from static scripts to agentic systems changes the way we build and interact with software. A deep dive into reasoning loops and tool use.
-            </p>
-          </div>
-        </article>
 
-        <article className="group relative flex flex-col items-start justify-between">
-          <div className="flex items-center gap-x-4 text-xs">
-            <time dateTime="2024-02-28" className="text-white/45">
-              Feb 28, 2024
-            </time>
-            <span className="relative z-10 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-medium text-white/65 hover:bg-white/10">
-              Biotech
-            </span>
-          </div>
-          <div className="group relative">
-            <h3 className="mt-3 text-xl font-semibold leading-6 text-white group-hover:text-white/80">
-              <a href="#">
-                <span className="absolute inset-0" />
-                Bridging Software and Biology
-              </a>
-            </h3>
-            <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/65">
-              Thoughts on the intersection of computational systems and biological processes. How modern AI infrastructure is accelerating biotech research.
+      <div className="mt-16 border-t border-white/10 pt-16">
+        {posts.length === 0 ? (
+          <div className="relative overflow-hidden rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-8 py-20 text-center">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-3xl"
+            />
+            <p className="relative text-xs uppercase tracking-[0.4em] text-white/45">Still Seeding</p>
+            <h2 className="relative mt-5 text-2xl font-normal tracking-tight text-white">Nothing published yet</h2>
+            <p className="relative mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/65">
+              The garden is planted, but nothing has broken ground. The first entries will land here — check back soon.
             </p>
           </div>
-        </article>
+        ) : (
+          <div className="grid gap-8">
+            {posts.map((post) => (
+              <article key={post.slug} className="group relative flex flex-col items-start justify-between">
+                <div className="flex items-center gap-x-4 text-xs">
+                  <time dateTime={post.date} className="text-white/45">
+                    {formatPostDate(post.date)}
+                  </time>
+                  <span className="relative z-10 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-medium text-white/65">
+                    {post.category}
+                  </span>
+                </div>
+                <h2 className="mt-3 text-xl font-semibold leading-6 text-white transition-colors group-hover:text-white/80">
+                  <Link to={`/writing/${post.slug}`}>
+                    <span className="absolute inset-0" />
+                    {post.title}
+                  </Link>
+                </h2>
+                <p className="mt-4 line-clamp-3 text-sm leading-6 text-white/65">{post.summary}</p>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
