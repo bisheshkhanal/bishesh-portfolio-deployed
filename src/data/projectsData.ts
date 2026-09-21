@@ -5,6 +5,7 @@ export type Project = {
   technologies: string[]; images: string[];
   demoLink: string | null; repoLink: string | null;
   featured: boolean; isExperiment: boolean;
+  status: 'live' | 'in-progress';
   details?: ProjectDetails;
 };
 
@@ -17,9 +18,10 @@ export const projects: Project[] = [
     technologies: ['React 19', 'Tailwind CSS', 'Chrome Extension MV3', 'Vite', 'LLMs'],
     images: ['/projects/ragebaiter.jpg'],
     demoLink: null,
-    repoLink: null,
+    repoLink: 'https://github.com/bisheshkhanal/RageBaiter',
     featured: true,
     isExperiment: false,
+    status: 'in-progress',
     details: {
       overview:
         'RageBaiter passively monitors tweets, analyzes political bias and logical fallacies with LLM-powered vectors, compares them against each user\'s political compass, and surfaces Socratic interventions when bias-confirming content is detected.',
@@ -47,9 +49,10 @@ export const projects: Project[] = [
     technologies: ['Node.js', 'Express', 'JWT', 'UDP', 'Stop-and-Wait Protocol'],
     images: ['/projects/securewebsuite.jpg'],
     demoLink: null,
-    repoLink: null,
+    repoLink: 'https://github.com/bisheshkhanal/SecureWebSuite',
     featured: true,
     isExperiment: false,
+    status: 'in-progress',
     details: {
       overview:
         'Two independent components: A REST API for JWT-authenticated file upload, listing, and download, and a UDP Transfer Demo implementing a stop-and-wait protocol with checksums, ACKs, and bounded retries.',
@@ -72,10 +75,11 @@ export const projects: Project[] = [
       'A Wordle-like guessing game featuring One Piece characters. Guess the mystery character in 6 tries using attribute clues!',
     technologies: ['React', 'TypeScript', 'Tailwind CSS'],
     images: ['/projects/onepiecedle.jpg'],
-    demoLink: null,
-    repoLink: null,
+    demoLink: 'https://onepiecedle-nine.vercel.app',
+    repoLink: 'https://github.com/bisheshkhanal/opdle',
     featured: true,
     isExperiment: false,
+    status: 'live',
     details: {
       overview:
         'A daily and infinite mode guessing game with smart autocomplete and visual feedback for character attributes.',
@@ -93,6 +97,23 @@ export const projects: Project[] = [
           description: 'Color-coded clues with arrow indicators.',
         },
       ],
+    },
+  },
+  {
+    id: 'betterimpostor',
+    title: 'BetterImpostor',
+    description:
+      'A free, offline word deduction party game built in Flutter. Everyone gets a secret word except the impostor — describe, discuss, and vote them out before time runs out.',
+    technologies: ['Flutter', 'Dart', 'Riverpod', 'GoRouter'],
+    images: [],
+    demoLink: null,
+    repoLink: 'https://github.com/bisheshkhanal/better-imposter',
+    featured: true,
+    isExperiment: false,
+    status: 'in-progress',
+    details: {
+      overview:
+        'A cross-platform party game for iOS, Android, and web with 25 bundled word categories. Fully offline with no backend, no accounts, and no tracking.',
     },
   },
 ];

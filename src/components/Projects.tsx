@@ -104,7 +104,17 @@ export default function Projects({ featured = false }: ProjectsProps) {
             >
               <div className="flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-2xl font-bold text-white tracking-tight">{p.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-2xl font-bold text-white tracking-tight">{p.title}</h3>
+                        {p.status === 'in-progress' && (
+                          <span
+                            data-testid="project-status-badge"
+                            className="px-3 py-1 rounded-md text-xs font-medium bg-[#ff9500]/20 text-[#ff9500]"
+                          >
+                            In Progress
+                          </span>
+                        )}
+                    </div>
                     <motion.div 
                         animate={{ rotate: isOpen ? 45 : 0 }}
                         className="text-white/50 text-2xl"
