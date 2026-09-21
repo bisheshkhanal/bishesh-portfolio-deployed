@@ -12,25 +12,25 @@ export const BEAT_CONFIGS: BeatConfig[] = [
     scrollStart: 0.00,
     scrollEnd: 0.25,
     label: 'Biology',
-    copy: 'DNA is the language of the genome. But it doesn\'t create life from nothing. It encodes potential into structure — a double helix of instructions waiting to be read.',
+    copy: 'DNA gets written as four letters. The molecule itself is one continuous run of chemistry, and the letters are notation we put on top of it. Read them three at a time and you get amino acids. The chain folds, and the fold is what does the work.',
   },
   {
     scrollStart: 0.25,
     scrollEnd: 0.50,
     label: 'Computation',
-    copy: 'Bits are the fundamental DNA of computation—binary sequences encoding infinite potential. In agentic systems, these bits abstract into tokens, the DNA of language models. They flow through dual processing lanes, passing through staged gates where raw potential transforms into structured output.',
+    copy: 'A language model works the same way. Tokens are notation too, a grid laid over text so a machine can index it. Inside, everything is vectors, and the meaning sits in how those vectors fall relative to each other.',
   },
   {
     scrollStart: 0.50,
     scrollEnd: 0.75,
     label: 'Maya',
-    copy: 'This is where the framework locks into place. Perspective and movement are the encoding mechanism that generates units of experience — what the Vedantic tradition calls Maya. The apparent multiplicity of life is an illusion created by this encoding: unity fractured into discrete units through the lens of perspective.',
+    copy: 'Vedanta has a name for this. Maya. Perspective is what cuts a continuous thing into separate pieces. The apparent multiplicity of life is an illusion created by this encoding.',
   },
   {
     scrollStart: 0.75,
     scrollEnd: 1.00,
     label: 'Brahman',
-    copy: 'Beneath appearance, beneath mechanism, beneath the encoding of units into multiplicity — there is a single, continuous truth, a potentiality. What Vedanta calls Brahman. I am grounded by the realization that I am, ultimately, the substrate beneath all four layers of this topology.',
+    copy: 'Under all of it there is one continuous thing. Vedanta calls it Brahman. I find that steadying. Whatever layer I\'m looking at, I\'m the substrate it runs on.',
   },
 ];
 

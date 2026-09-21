@@ -32,7 +32,7 @@
 - Do not change beat boundaries or copy ordering in one place only; `topologyConfig.ts`, camera/effects behavior, and shader expectations move together.
 - Do not forget the duplicated geometry constants problem: if `ROTATIONS`, `RADIUS`, or `HEIGHT` change, audit both TS config and GLSL.
 - Do not add expensive object allocation inside `useFrame` or shader-adjacent hot paths.
-- **LOCKED: Beat 3 is considered perfect and must NEVER be changed.** Beat 3 is explicitly frozen. All iteration and redesign work must focus on Beat 1 (and potentially Beat 2 when scoped) and Beat 4 (currently being redesigned as a torus). Any request to modify Beat 3 visuals, timing, or behavior must be rejected.
+- **LOCKED: Beat 3 visuals, timing, and behavior are frozen.** The beat 3 shader state, camera choreography, scroll boundaries, and effect values are considered final. Reject any request to modify them. Visual iteration targets Beat 1, Beat 2 when scoped, and Beat 4. This lock does NOT cover narrative copy: the `copy` strings in `topologyConfig.ts` are authored content owned by the site author, are revised deliberately, and may be edited on request.
 
 ## NOTES
 - `ScrollControls` uses `pages={4}` and `damping={0.1}`; that pacing shapes the whole narrative.

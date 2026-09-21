@@ -10,7 +10,7 @@ export function ReducedMotionTopology() {
         background: '#080808',
         color: 'rgba(255,255,255,0.85)',
       }}
-      aria-label="About — Topology of Potential"
+      aria-label="About: Topology of Potential"
     >
       {BEAT_CONFIGS.map((beat, i) => (
         <section
