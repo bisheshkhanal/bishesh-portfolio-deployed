@@ -4,10 +4,10 @@ import { formatPostDate, posts } from '../data/postsData';
 export default function WritingRoute() {
   return (
     <section id="writing" className="w-full py-24 lg:py-32">
-      <p className="mb-4 text-xs uppercase tracking-[0.4em] text-white/45">Digital Garden</p>
+      <p className="mb-4 text-xs uppercase tracking-[0.4em] text-white/45">Field Notes</p>
       <h1 className="text-5xl font-normal tracking-tight text-white">Writing & Logs</h1>
       <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/65">
-        A living space for thoughts, learnings, and explorations on agentic engineering, AI infrastructure, and biotech.
+        Notes on agentic engineering, AI infrastructure, and biotech. I write about things I'm building and things I'm still figuring out.
       </p>
 
       <div className="mt-16 border-t border-white/10 pt-16">
@@ -17,10 +17,10 @@ export default function WritingRoute() {
               aria-hidden="true"
               className="pointer-events-none absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-3xl"
             />
-            <p className="relative text-xs uppercase tracking-[0.4em] text-white/45">Still Seeding</p>
+            <p className="relative text-xs uppercase tracking-[0.4em] text-white/45">Empty for now</p>
             <h2 className="relative mt-5 text-2xl font-normal tracking-tight text-white">Nothing published yet</h2>
             <p className="relative mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/65">
-              The garden is planted, but nothing has broken ground. The first entries will land here — check back soon.
+              I haven't written anything yet. When I do, it'll show up here.
             </p>
           </div>
         ) : (

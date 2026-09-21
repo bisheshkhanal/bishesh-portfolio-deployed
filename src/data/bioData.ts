@@ -1,17 +1,17 @@
 export const bio = {
   name: "Bishesh Khanal",
-  tagline: "I build agentic workflows, modern AI infrastructure, and explore the intersection of software and biology.",
+  tagline: "I build agentic workflows and AI infrastructure. I'm studying computer science and biology at the University of Calgary.",
   // NOTE: Not currently consumed by any active component. Available for future use.
   greeting: "Hey, I'm Bishesh.",
   subheaders: [
-    "From biological systems to digital architecture",
+    "Biology and software, mostly at the same time",
     "I build systems that can reason",
-    "Tools that augment human capability",
-    "Less boilerplate. More protocols. More impact."
+    "Tools that make people faster",
+    "Fewer wrappers. More actual protocols."
   ],
   paragraphs: [
-    "I'm a Computer Science and Biology student at the University of Calgary. I'm interested in how we can leverage modern AI harnesses to build systems that don't just process data, but actually reason and act.",
-    "My work focuses on agentic engineering, distributed systems, and low-level control. I prefer building real protocols and complex logic over standard CRUD applications.",
-    "I'm also deeply interested in biotech—specifically how we can apply software engineering principles to understand and interact with biological systems."
+    "I'm in a multi-disciplinary natural sciences program at the University of Calgary, with concentrations in computer science and biological sciences. It carries a co-op designation, which is how I ended up at Upzoids.",
+    "Most of my work is agentic engineering, distributed systems, and low-level control. CRUD apps bore me. I like building the actual protocol underneath.",
+    "Biotech is the other half of it. I want to know how far normal software engineering practice really transfers to biological systems."
   ]
 };

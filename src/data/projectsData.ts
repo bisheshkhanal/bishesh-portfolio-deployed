@@ -14,7 +14,7 @@ export const projects: Project[] = [
     id: 'ragebaiter',
     title: 'RageBaiter',
     description:
-      'A Manifest V3 Chrome extension built to nudge Twitter/X users out of echo chambers using LLM-powered vectors to analyze political bias and logical fallacies.',
+      'A Manifest V3 Chrome extension that scores tweets for political bias and logical fallacies using LLM-powered vectors. It nudges you out of echo chambers. Still in progress.',
     technologies: ['React 19', 'Tailwind CSS', 'Chrome Extension MV3', 'Vite', 'LLMs'],
     images: ['/projects/ragebaiter.jpg'],
     demoLink: null,
@@ -24,19 +24,19 @@ export const projects: Project[] = [
     status: 'in-progress',
     details: {
       overview:
-        'RageBaiter passively monitors tweets, analyzes political bias and logical fallacies with LLM-powered vectors, compares them against each user\'s political compass, and surfaces Socratic interventions when bias-confirming content is detected.',
+        'RageBaiter watches your feed without you doing anything. It scores each tweet for political bias and logical fallacies, then compares it against your political compass. When the content just confirms what you already believe, it adds a Socratic prompt to the page.',
       features: [
         {
           title: 'Real-time Tweet Analysis',
-          description: 'Intercepts and analyzes tweets in the DOM.',
+          description: 'Reads tweets from the DOM as they load.',
         },
         {
           title: 'Political Compass Mapping',
-          description: 'Compares content against user\'s baseline.',
+          description: 'Compares each tweet against your political compass baseline.',
         },
         {
           title: 'Socratic Interventions',
-          description: 'Injects UI elements to prompt critical thinking.',
+          description: 'Adds a prompt to the page that asks you to reconsider.',
         },
       ],
     },
@@ -45,7 +45,7 @@ export const projects: Project[] = [
     id: 'securewebsuite',
     title: 'Secure File Transfer Platform',
     description:
-      'A backend platform demonstrating authenticated file management and reliable UDP data transfer.',
+      'A backend project with JWT-authenticated file management. It also has a custom UDP protocol that makes transfers reliable.',
     technologies: ['Node.js', 'Express', 'JWT', 'UDP', 'Stop-and-Wait Protocol'],
     images: ['/projects/securewebsuite.jpg'],
     demoLink: null,
@@ -55,15 +55,15 @@ export const projects: Project[] = [
     status: 'in-progress',
     details: {
       overview:
-        'Two independent components: A REST API for JWT-authenticated file upload, listing, and download, and a UDP Transfer Demo implementing a stop-and-wait protocol with checksums, ACKs, and bounded retries.',
+        'Two independent components. One is a REST API that handles JWT-authenticated file upload, listing, and download. The other is a UDP Transfer Demo running a stop-and-wait protocol with checksums, ACKs, and bounded retries.',
       features: [
         {
           title: 'Authenticated REST API',
-          description: 'Secure file management.',
+          description: 'JWT-authenticated upload, listing, and download endpoints.',
         },
         {
           title: 'Custom UDP Protocol',
-          description: 'Reliable data transfer over UDP.',
+          description: 'Stop-and-wait protocol with checksums, ACKs, and bounded retries.',
         },
       ],
     },
@@ -72,7 +72,7 @@ export const projects: Project[] = [
     id: 'onepiecedle',
     title: 'OnePiecedle',
     description:
-      'A Wordle-like guessing game featuring One Piece characters. Guess the mystery character in 6 tries using attribute clues!',
+      'A Wordle-style game where you guess a One Piece character. Six tries, attribute clues.',
     technologies: ['React', 'TypeScript', 'Tailwind CSS'],
     images: ['/projects/onepiecedle.jpg'],
     demoLink: 'https://onepiecedle-nine.vercel.app',
@@ -82,18 +82,18 @@ export const projects: Project[] = [
     status: 'live',
     details: {
       overview:
-        'A daily and infinite mode guessing game with smart autocomplete and visual feedback for character attributes.',
+        'Two modes: a daily puzzle and an infinite one. Autocomplete searches by name or alias, and attribute clues show up as color-coded arrows.',
       features: [
         {
           title: 'Daily & Infinite Modes',
-          description: 'Play once a day or practice endlessly.',
+          description: 'Play once a day, or keep going in infinite mode.',
         },
         {
-          title: 'Smart Autocomplete',
+          title: 'Name Autocomplete',
           description: 'Search by character name or alias.',
         },
         {
-          title: 'Visual Feedback',
+          title: 'Attribute Clues',
           description: 'Color-coded clues with arrow indicators.',
         },
       ],
@@ -103,7 +103,7 @@ export const projects: Project[] = [
     id: 'betterimpostor',
     title: 'BetterImpostor',
     description:
-      'A free, offline word deduction party game built in Flutter. Everyone gets a secret word except the impostor — describe, discuss, and vote them out before time runs out.',
+      'A free, offline word deduction party game built in Flutter. Everyone gets a secret word except the impostor. Describe yours, talk it over, and vote someone out before time runs out.',
     technologies: ['Flutter', 'Dart', 'Riverpod', 'GoRouter'],
     images: [],
     demoLink: null,
@@ -113,7 +113,7 @@ export const projects: Project[] = [
     status: 'in-progress',
     details: {
       overview:
-        'A cross-platform party game for iOS, Android, and web with 25 bundled word categories. Fully offline with no backend, no accounts, and no tracking.',
+        'Runs on iOS, Android, and web with 25 bundled word categories. Fully offline. No backend, no accounts, and nothing gets tracked.',
     },
   },
 ];

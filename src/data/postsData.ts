@@ -7,7 +7,7 @@ export type Post = {
   body: string;      // markdown source rendered on the post detail route
 };
 
-// Intentionally empty — no posts are published yet.
+// Intentionally empty. No posts are published yet.
 // Add real entries here; the writing index and /writing/:slug detail route read from this array.
 export const posts: Post[] = [];
 
